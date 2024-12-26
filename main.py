@@ -127,7 +127,28 @@ async def privacy(interaction: discord.Interaction, option: bool):
         return
 
 
-    
+import os
+
+@tree.command(name="devmessage", description="send a message or suggestion to the developer (anonymous)")
+async def devmessage(interaction: discord.Interaction, message: str):
+    if isblacklisted(interaction.user.name, blacklist):
+        message = None
+        await interaction.response.send_message(f"while i really appreciate your feedback, your privacy settings don't allow me to save your message:\n`{message}`\nyou can do /privacy False to change your privacy settings.", ephemeral=True)
+        return
+    try:
+        if not os.path.exists("devmessages.txt"):   # check if the file exists, and create it if not
+            with open("devmessages.txt", "w") as file:
+                file.write("messages for loritsi:\n")
+
+        with open("devmessages.txt", "a") as file:  # append the message to the file
+            file.write(f"\t- {message}\n")
+
+        stamp = f"message received and will be saved anonymously: \n`{message}`\nthanks for your feedback :)"                                         
+        await interaction.response.send_message(stamp, ephemeral=True) # send confirmation message
+    except Exception as e: # if something goes wrong send an error message
+        await interaction.response.send_message(f"sorry, something went wrong: {e} (send this to loritsi on discord)", ephemeral=True)
+
+
 
 
 
