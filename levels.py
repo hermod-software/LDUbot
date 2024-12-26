@@ -98,14 +98,15 @@ class Levels(commands.Cog):
             return
         guild_id = str(message.guild.id)
         author_id = str(message.author.id)
+        guild_name = message.guild.name
 
         if self.is_recent_sender(guild_id, author_id):
-            stamp = f"recent sender {message.author.name} not awarded points"
+            stamp = f"{guild_name}: recent sender {message.author.name} not awarded points"
             print(stamp)
             return
         else:
             self.add_recent_sender(guild_id, author_id)
-            stamp = f"awarding {message.author.name} {award} points"
+            stamp = f"{guild_name}: awarding {message.author.name} {award} points"
             self.award_points(guild_id, author_id, award)
             print(stamp)
         
@@ -117,7 +118,7 @@ class Levels(commands.Cog):
         if user is None or user == interaction.user:
             targetisinvoker = True
             user = interaction.user
-
+        print(f"{interaction.user.name} invoked get_level on {user.name}")
         if interaction.guild is None:
             await interaction.response.send_message("this command must be used in a server!")
             return
