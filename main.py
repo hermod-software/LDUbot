@@ -3,14 +3,11 @@ import asyncio
 import hashlib
 import os
 
-intents = discord.Intents.default()
-intents.message_content = True
-intents.members = True
-
-client = discord.Client(intents=intents)
-tree = discord.app_commands.CommandTree(client)
+from shared import client, tree
+from blacklist import readblacklist, blacklistuser, unblacklistuser, isblacklisted, testblacklist
 
 latentmessages = [] # this variable is used to temporarily store messages that are then logged to log.txt every 30 seconds
+blacklist = [] # this list will store the hashed usernames of users who have opted out of logging
 
 async def log(): # log messages to log.txt every 30 seconds
     global latentmessages
@@ -35,14 +32,16 @@ async def on_ready():
     for guild in client.guilds:
         print(f" - {guild.name}")
     await synctrees()
+    print("Commands loaded:")
+    for command in tree.get_commands():
+        print(f" - {command.name}")
+
     asyncio.create_task(log())
     print("Started logging to log.txt")
+    blacklist = readblacklist() # load the blacklist from the file
+    testblacklist(blacklist) # run the test function to make sure the blacklist functions work (it'll crash if they don't)
+    print(f"Loaded & tested blacklist")
 
-LOG_EXCLUDE_CHANNELS = [
-    "bot-games",
-    "privatelog"
-    "publiclog"
-]
 
 
 # @client.event
@@ -54,7 +53,7 @@ LOG_EXCLUDE_CHANNELS = [
 async def on_guild_join(guild):
     print(f"Joined guild:")
     print(f" - {guild.name}")
-    await synctrees()
+    await synctrees() 
 
 @client.event
 async def on_guild_remove(guild):
@@ -100,68 +99,31 @@ async def add_role_to_members(interaction: discord.Interaction, target: discord.
     print(stamp)
     await message.edit(stamp)
 
-if os.path.exists("blacklist.txt"):
-    with open("blacklist.txt", "r") as file:
-        blacklist = file.readlines()
-        blacklist = [line.strip() for line in blacklist] # remove newline characters
-else:
-    blacklist = [] # if the file doesn't exist, create an empty one
-
-def hashusername(username):
-    username = username.encode("utf-8")
-    return hashlib.sha256(username).hexdigest()
-
-def blacklistuser(username):
-    username = hashusername(username)
-
-    if not username in blacklist:
-        blacklist.append(username)
-
-    with open("log.txt", "r") as file:  # load the log file into memory
-        log = file.readlines()          # read the file into a list of lines
-
-    for i, line in enumerate(log):      # iterate over the lines in the log
-        if username in line.split():    # if the username is in the line as a separate word (not as part of a longer word)
-            log[i] = log[i].replace(username, "(redacted username)")  #redact the username
-
-    with open("log.txt", "w") as file:  # open the log file in write mode
-        file.writelines(log)            # write the new redacted log to the file
-
-    with open("blacklist.txt", "w") as file:    # save the blacklist with the new user added
-        file.writelines(blacklist)
-
-def unblacklistuser(username):
-    username = hashusername(username)
-    for i, user in enumerate(blacklist):
-        if user == username:
-            blacklist.pop(i)
-    with open("blacklist.txt", "w") as file:    # save the blacklist with the new user removed
-        file.writelines(blacklist)
-
-    with open("blacklist.txt", "w") as file:    # save the blacklist with the new user removed
-        file.writelines(blacklist)
-
-def isblacklisted(username):
-    hashtocheck = hashusername(username)
-    return hashtocheck in blacklist # check if the hashed username is in the blacklist
-
 @tree.command(name="privacy", description="prevent debug logs from containing your username")
 async def privacy(interaction: discord.Interaction, option: bool):
+    blacklist = readblacklist()
+    print(f"privacy command invoked by {interaction.user.name}: {option}")
     if option == True:
-        if not isblacklisted(interaction.user.name):
-            blacklistuser(interaction.user.name)
+        if not isblacklisted(interaction.user.name, blacklist):
+            blacklist = blacklistuser(interaction.user.name, blacklist)
             await interaction.response.send_message(f"blacklisted user {interaction.user.name}. you can unblacklist yourself by doing /privacy False\n(see https://loritsi.neocities.org/privacy.txt)", ephemeral=True)
         else:
             await interaction.response.send_message(f"user {interaction.user.name} is already blacklisted", ephemeral=True)
+        return
     if option == False:
-        if isblacklisted(interaction.user.name):
-            unblacklistuser(interaction.user.name)
+        if isblacklisted(interaction.user.name, blacklist):
+            blacklist = unblacklistuser(interaction.user.name, blacklist)
             await interaction.response.send_message(f"unblacklisted user {interaction.user.name}. you can blacklist yourself again by doing /privacy True\n (see https://loritsi.neocities.org/privacy.txt)", ephemeral=True)
         else:
             await interaction.response.send_message(f"user {interaction.user.name} is not blacklisted", ephemeral=True)
+        return
+
+
     
 
 
 
 
-client.run('MTMyMTY5NzI1MjY2MTc4ODgyNA.GVuDKq.l1dElthaHLrLWGW63MLeXKsXrhlf3mA0ztDCv0')
+
+
+client.run('MTMyMTY5NzI1MjY2MTc4ODgyNA.G_jV_F.D21WaHXoz3O4kDmpt4Zfab2mFn0z596WaCm_P0')
