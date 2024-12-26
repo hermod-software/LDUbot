@@ -1,4 +1,5 @@
 import discord
+from discord.ext import commands
 import asyncio
 import hashlib
 import os
@@ -31,6 +32,8 @@ async def on_ready():
     print(f"Connected guilds:")
     for guild in client.guilds:
         print(f" - {guild.name}")
+        
+    await client.load_extension("levels")
     await synctrees()
     print("Commands loaded:")
     for command in tree.get_commands():
@@ -61,6 +64,10 @@ async def on_guild_remove(guild):
     print(f" - {guild.name}")
     await synctrees()
 
+@client.event
+async def on_interaction(interaction):
+    print(f"interaction received: {interaction.data}")
+
 @tree.command(name="role_list", description="list all members with a given role")
 async def role_list(interaction: discord.Interaction, role: discord.Role):
     members = role.members
@@ -68,6 +75,7 @@ async def role_list(interaction: discord.Interaction, role: discord.Role):
     await interaction.response.send_message(f"members of {role.name}:\n {output}")
 
 @tree.command(name="add_role_to_members", description="add a role to all members of a certain role")
+@commands.has_permissions(manage_roles=True)
 async def add_role_to_members(interaction: discord.Interaction, target: discord.Role, add: discord.Role):
     guild = interaction.guild
     guild.fetch_members()
