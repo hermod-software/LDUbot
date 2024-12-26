@@ -40,8 +40,7 @@ def blacklistuser(username, blacklist):
     if not username in blacklist:
         blacklist.append(username)
 
-    with open("log.txt", "r") as file:  # load the log file into memory
-        log = file.readlines()          # read the file into a list of lines
+    log = readlog() # load the log into memory
 
     for i, line in enumerate(log):      # iterate over the lines in the log
         if username in line.split():    # if the username is in the line as a separate word (not as part of a longer word)
