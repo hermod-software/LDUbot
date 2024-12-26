@@ -18,6 +18,14 @@ def writelog(log):
     with open("log.txt", "w") as file:
         file.writelines(log)
 
+def readlog():
+    if os.path.exists("log.txt"):
+        with open("log.txt", "r") as file:
+            log = file.readlines()
+            return log
+    else:
+        return []
+
 def writeblacklist(blacklist):
     with open("blacklist.txt", "w") as file:
         file.writelines(blacklist)
