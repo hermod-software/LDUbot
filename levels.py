@@ -127,7 +127,7 @@ class Levels(commands.Cog):
         user_id = str(user.id)
         points = self.points.get(guild_id, {}).get(user_id, 0)
         level, tonextlevel = self.get_level_from_points(points)
-        stamp = f"level {level} ({points} points) with {tonextlevel - points} points until next level)"
+        stamp = f"level {level} ({points} points) with {tonextlevel - points} points until next level"
         if targetisinvoker:
             await interaction.response.send_message(f"you are {stamp}")
         else:
