@@ -53,6 +53,12 @@ async def on_guild_join(guild):
     print(f" - {guild.name}")
     await synctrees()
 
+@client.event
+async def on_guild_remove(guild):
+    print(f"Left guild:")
+    print(f" - {guild.name}")
+    await synctrees()
+
 @tree.command(name="role_list", description="list all members with a given role")
 async def role_list(interaction: discord.Interaction, role: discord.Role):
     members = role.members
@@ -80,9 +86,9 @@ async def add_role_to_members(interaction: discord.Interaction, target: discord.
             print(f"error adding role to {member.name}: {e}")
             interaction.followup.send(f"could not role to {member.name}: {e}")
 
-    stamp = f"user {interaction.user.name} added role \"{add.name}\" to {added_count} members of role \"{target.name}\""
+    stamp = f"user {interaction.user.name} added role \"{add.name}\" to {added_count}/{len(member)} members of role \"{target.name}\""
     latentmessages.append(stamp)
     print(stamp)
-    await interaction.followup.send(stamp)
+    await message.edit(stamp)
 
 client.run('MTMyMTY5NzI1MjY2MTc4ODgyNA.GVuDKq.l1dElthaHLrLWGW63MLeXKsXrhlf3mA0ztDCv0')
