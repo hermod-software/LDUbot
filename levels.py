@@ -255,22 +255,37 @@ class Levels(commands.Cog):
             print(f"Error converting guild_id {guild_id} to int")
             return 0, 0
 
+        if guild_id not in ConfigHandler.guilds:
+            print(f"Guild ID {guild_id} not found in ConfigHandler.guilds")
+            return 0, 0
+
         guild = ConfigHandler.guilds[guild_id]
         base = guild.getconfig("base")
         growth_rate = guild.getconfig("growth_rate")
-
         level = 0
-        required = base
+        total_required = base  # Points required for the current level
+        cumulative_points = 0  # Total points required to reach the current level
 
-        while points >= required:
-            points -= required
-            level += 1
-            required = math.floor(required * growth_rate)
+        while points >= total_required:
+            cumulative_points += total_required  # Add points needed for the current level
+            points -= total_required  # Deduct points for the current level
+            level += 1  # Increment level
+            total_required = math.floor(base * (growth_rate ** level))  # Points needed for the next level
 
-        return level, required - points
+        # Calculate points remaining to reach the next level
+        remaining_points = total_required - points
+
+        # Debug output to trace calculations
+        print(f"Level: {level}, Points Remaining: {points} Next Level Threshold: {total_required}, Remaining Points to Next Level: {remaining_points}")
+
+        return level, remaining_points
+
+
+
         
 
-        
+    def get_points(self, guild, user):
+        return self.points.get(guild, {}).get(user, 0)
 
     def add_recent_sender(self, guild, user):
         if guild not in self.recentmessages.keys():
@@ -311,6 +326,38 @@ class Levels(commands.Cog):
         self.points[guild] = {}
         self.save_points()
 
+    async def rolelevelpass(self, guild: discord.Guild, member: discord.Member, level):
+        async def giverole(member, role, guild):
+            try:
+                await member.add_roles(role)
+                print(f"added role {role.name} to {member.name}")
+                try:
+                    await member.send(f"you have been awarded the role {role.name} in {guild.name}for reaching level {level}")
+                except Exception as e:
+                    print(f"could not send DM to {member.name}: {e}")
+            except discord.Forbidden:
+                print(f"tried to give {role.name} to {member.name} but have no permission to add roles in {guild.name}")
+
+        print(f"rolelevelpass called for {member.name} in {guild.name}")
+        guildid = guild.id
+        guildname = guild.name
+        guildconfig = ConfigHandler.guilds[guildid]
+        roles = guildconfig.getconfig("roles")
+        for level in range(0, level + 1):
+            role = roles.get(level, None)
+            if role is not None:
+                role = guild.get_role(role)
+                if role is not None:
+                    await giverole(member, role, guild)
+                    
+                else:
+                    print(f"role for level {level} not found in {guildname}")
+            else:
+                print(f"no role set for level {level} in {guildname}")
+            
+            
+                
+
     @tasks.loop(seconds=30)  # save every 30 seconds
     async def save_task(self):
         self.save_points()
@@ -349,8 +396,20 @@ class Levels(commands.Cog):
             return
         else:
             self.add_recent_sender(guild_id, author_id)
+
             stamp = f"{guild_name}: awarding {message.author.name} {award} points"
+
+            userpoints = self.points.get(guild_id, {}).get(author_id, 0)
+
+            userlevel = self.get_level_from_points(userpoints, guild_id)[0]
+
             self.award_points(guild_id, author_id, award)
+
+            newuserlevel = self.get_level_from_points(userpoints, guild_id)[0]
+
+            if userlevel != newuserlevel: # if the user levelled up
+                self.rolelevelpass(message.guild, message.author, newuserlevel)
+                stamp += f"user {message.author.name} levelled up to level {newuserlevel}"
             print(stamp)
         
 
@@ -370,11 +429,22 @@ class Levels(commands.Cog):
         user_id = str(user.id)
         points = self.points.get(guild_id, {}).get(user_id, 0)
         level, tonextlevel = self.get_level_from_points(points, guild_id)
-        stamp = f"level {level} ({points} points) with {tonextlevel - points} points until next level"
+        stamp = f"level {level} ({points} points) with {tonextlevel} points until next level"
         if targetisinvoker:
             await interaction.response.send_message(f"you are {stamp}")
         else:
             await interaction.response.send_message(f"{user.mention} is {stamp}")
+
+    @discord.app_commands.command(name="add_points", description="add points to a user")
+    @commands.has_permissions(manage_roles=True)
+    async def add_points(self, interaction: discord.Interaction, user: discord.Member, points: int):
+        guild_id = str(interaction.guild.id)
+        user_id = str(user.id)
+        self.award_points(guild_id, user_id, points)
+        user_points = self.points.get(guild_id, {}).get(user_id, 0)
+        user_level = self.get_level_from_points(user_points, guild_id)[0]
+        await self.rolelevelpass(interaction.guild, user, user_level)
+        await interaction.response.send_message(f"added {points} points to {user.name}")
 
 
 
@@ -400,7 +470,7 @@ class Levels(commands.Cog):
             else:
                 emoji = self.otheremoji
 
-            leaderboard.append(f"{emoji} `[Level {level}]` **{username}** `{user_points} points, {tonextlevel - user_points} to next level`")
+            leaderboard.append(f"{emoji} `[Level {level}]` **{username}** `{user_points} points, {tonextlevel} to next level`")
         header = f"# `Leaderboard for {guild_name}`"
         leaderboard = leaderboard[:(pages * 10)]
         
