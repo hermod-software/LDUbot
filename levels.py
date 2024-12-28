@@ -249,29 +249,25 @@ class Levels(commands.Cog):
         self.otheremoji = ":speech_balloon:"
 
     def get_level_from_points(self, points, guild_id):
-        if type(guild_id) != int:
-            try:
-                guild_id = int(guild_id)
-            except ValueError:
-                print(f"Error converting guild_id {guild_id} to int")
+        try:
+            guild_id = int(guild_id)
+        except ValueError:
+            print(f"Error converting guild_id {guild_id} to int")
+            return 0, 0
+
         guild = ConfigHandler.guilds[guild_id]
         base = guild.getconfig("base")
         growth_rate = guild.getconfig("growth_rate")
 
         level = 0
         required = base
-        counted = 0
 
         while points >= required:
-            counted += 1
-            if counted == required:
-                level += 1
-                required = math.floor(required * growth_rate)
-                counted = 0  
+            points -= required
+            level += 1
+            required = math.floor(required * growth_rate)
 
-        remaining_points = required - counted  
-
-        return level, remaining_points
+        return level, required - points
         
 
         
