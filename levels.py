@@ -13,6 +13,7 @@ import yaml
 import os
 import copy
 
+@discord.app_commands.default_permissions()
 class ConfigHandler:
     guilds = {}
     defaultconfig = {
@@ -108,8 +109,10 @@ class GuildConfig(commands.GroupCog, group_name="config"):
         print(f"Left guild: {guild.name} (ID: {guild.id})")
 
     @discord.app_commands.command(
-        name="set_base", description=f"set the amount of points to get from level 0 to level 1 (default: {ConfigHandler.defaultconfig['base']})"
+        name="set_base", 
+        description=f"set the amount of points to get from level 0 to level 1 (default: {ConfigHandler.defaultconfig['base']})"
     )
+    @commands.has_permissions(manage_guild=True)
     async def set_base(self, interaction: discord.Interaction, base: int):
         guild_config = ConfigHandler.guilds.get(interaction.guild.id)
         if not guild_config:
@@ -128,6 +131,7 @@ class GuildConfig(commands.GroupCog, group_name="config"):
         await interaction.response.send_message(f"base points amount is {base}")
 
     @discord.app_commands.command(name="set_growth_rate", description=f"set the growth rate for points (default: {ConfigHandler.defaultconfig['growth_rate']})")
+    @commands.has_permissions(manage_guild=True)
     async def set_growth_rate(self, interaction: discord.Interaction, rate: float):
         guild_config = ConfigHandler.guilds.get(interaction.guild.id)
         if not guild_config:
@@ -137,6 +141,7 @@ class GuildConfig(commands.GroupCog, group_name="config"):
         await interaction.response.send_message(f"set growth rate to {rate}")
 
     @discord.app_commands.command(name="get_growth_rate", description="get the growth rate for points")
+    @commands.has_permissions(manage_guild=True)
     async def get_growth_rate(self, interaction: discord.Interaction):
         guild_config = ConfigHandler.guilds.get(interaction.guild.id)
         if not guild_config:
@@ -146,6 +151,7 @@ class GuildConfig(commands.GroupCog, group_name="config"):
         await interaction.response.send_message(f"growth rate is {rate}")
 
     @discord.app_commands.command(name="set_point_range", description=f"set the upper and lower bound for points awarded (default: {ConfigHandler.defaultconfig['point_range_lower']} - {ConfigHandler.defaultconfig['point_range_upper']})")
+    @commands.has_permissions(manage_guild=True)
     async def set_point_range(self, interaction: discord.Interaction, lower: int, upper: int):
         guild_config = ConfigHandler.guilds.get(interaction.guild.id)
         if not guild_config:
@@ -156,6 +162,7 @@ class GuildConfig(commands.GroupCog, group_name="config"):
         await interaction.response.send_message(f"set point range to {lower} - {upper}")
 
     @discord.app_commands.command(name="get_point_range", description="get the upper and lower bound for points awarded")
+    @commands.has_permissions(manage_guild=True)
     async def get_point_range(self, interaction: discord.Interaction):
         guild_config = ConfigHandler.guilds.get(interaction.guild.id)
         if not guild_config:
@@ -166,6 +173,7 @@ class GuildConfig(commands.GroupCog, group_name="config"):
         await interaction.response.send_message(f"point range is {lower} - {upper}")
 
     @discord.app_commands.command(name="reset_config", description="reset the configuration for this guild")
+    @commands.has_permissions(manage_guild=True)
     async def reset_config(self, interaction: discord.Interaction):
         guild_config = ConfigHandler.guilds.get(interaction.guild.id)
         if not guild_config:
@@ -436,7 +444,6 @@ class Levels(commands.Cog):
             await interaction.response.send_message(f"{user.mention} is {stamp}")
 
     @discord.app_commands.command(name="add_points", description="add points to a user")
-    @commands.has_permissions(manage_roles=True)
     async def add_points(self, interaction: discord.Interaction, user: discord.Member, points: int):
         guild_id = str(interaction.guild.id)
         user_id = str(user.id)

@@ -158,6 +158,7 @@ async def send_dev_message(interaction: discord.Interaction, message: str):
 
 
 
+with open("bot_token.txt", "r") as file:
+    bot_token = file.read().strip()
 
-
-client.run('MTMyMTY5NzI1MjY2MTc4ODgyNA.G_jV_F.D21WaHXoz3O4kDmpt4Zfab2mFn0z596WaCm_P0')
+client.run(bot_token)
