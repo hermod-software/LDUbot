@@ -340,7 +340,7 @@ class Levels(commands.Cog):
                 await member.add_roles(role)
                 print(f"added role {role.name} to {member.name}")
                 try:
-                    await member.send(f"you have been awarded the role {role.name} in {guild.name}for reaching level {level}")
+                    await member.send(f"you have been awarded the role {role.name} in {guild.name} for reaching level {level}")
                 except Exception as e:
                     print(f"could not send DM to {member.name}: {e}")
             except discord.Forbidden:

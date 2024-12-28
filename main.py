@@ -78,7 +78,7 @@ async def role_list(interaction: discord.Interaction, role: discord.Role):
     await interaction.response.send_message(f"members of {role.name}:\n {output}")
 
 @tree.command(name="add_role_to_members", description="add a role to all members of a certain role")
-@commands.has_permissions(manage_roles=True)
+@discord.app_commands.checks.has_permissions(manage_roles=True)
 async def add_role_to_members(interaction: discord.Interaction, target: discord.Role, add: discord.Role):
     guild = interaction.guild
     guild.fetch_members()
