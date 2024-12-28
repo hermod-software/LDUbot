@@ -2,15 +2,18 @@ import discord
 from discord.ext import commands
 import asyncio
 import hashlib
+import yaml
 import os
 
 from shared import client, tree
 from blacklist import readblacklist, blacklistuser, unblacklistuser, isblacklisted, testblacklist
 
-latentmessages = [] # this variable is used to temporarily store messages that are then logged to log.txt every 30 seconds
-blacklist = [] # this list will store the hashed usernames of users who have opted out of logging
 
-async def log(): # log messages to log.txt every 30 seconds
+
+latentmessages = [] # this variable is used to temporarily store messages that are then logged to log.txt every 30 seconds
+blacklist = []      # this list will store the hashed usernames of users who have opted out of logging
+
+async def log():    # log messages to log.txt every 30 seconds
     global latentmessages
     await client.wait_until_ready()
     while not client.is_closed():
@@ -132,6 +135,7 @@ import os
 
 @tree.command(name="send_dev_message", description="send a message or suggestion to the developer (anonymous)")
 async def send_dev_message(interaction: discord.Interaction, message: str):
+    global blacklist, latentmessages
     if isblacklisted(interaction.user.name, blacklist):
         await interaction.response.send_message(f"while i really appreciate your feedback, your privacy settings don't allow me to save your message:\n`{message}`\nyou can do /privacy False to change your privacy settings.", ephemeral=True)
         message = None
@@ -145,6 +149,7 @@ async def send_dev_message(interaction: discord.Interaction, message: str):
             file.write(f"\t- {message}\n")
 
         stamp = f"message received and will be saved anonymously: \n`{message}`\nthanks for your feedback :)"    
+        latentmessages.append(stamp)
         print(f"new message: {message}")                                     
         await interaction.response.send_message(stamp, ephemeral=True) # send confirmation message
     except Exception as e: # if something goes wrong send an error message

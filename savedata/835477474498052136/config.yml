@@ -1,0 +1,5 @@
+base: 100
+growth_rate: 1.2
+point_range_lower: 1
+point_range_upper: 5
+roles: {}

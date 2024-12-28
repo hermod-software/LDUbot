@@ -4,9 +4,12 @@ import os
 
 from shared import client, tree
 
+blacklistpath = "savedata/blacklist.txt"
+logpath = "savedata/log.txt"
+
 def readblacklist():
-    if os.path.exists("blacklist.txt"):
-        with open("blacklist.txt", "r") as file:
+    if os.path.exists(blacklistpath):
+        with open(blacklistpath, "r") as file:
             blacklist = file.readlines()
             blacklist = [line.strip() for line in blacklist] # remove newline characters
             return blacklist
@@ -15,19 +18,19 @@ def readblacklist():
         return blacklist
     
 def writelog(log):
-    with open("log.txt", "w") as file:
+    with open(logpath, "w") as file:
         file.writelines(log)
 
 def readlog():
-    if os.path.exists("log.txt"):
-        with open("log.txt", "r") as file:
+    if os.path.exists(logpath):
+        with open(logpath, "r") as file:
             log = file.readlines()
             return log
     else:
         return []
 
 def writeblacklist(blacklist):
-    with open("blacklist.txt", "w") as file:
+    with open(blacklistpath, "w") as file:
         file.writelines(blacklist)
 
 def hashusername(username):
