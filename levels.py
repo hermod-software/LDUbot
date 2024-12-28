@@ -13,7 +13,6 @@ import yaml
 import os
 import copy
 
-@discord.app_commands.default_permissions()
 class ConfigHandler:
     guilds = {}
     defaultconfig = {
@@ -88,6 +87,7 @@ class ConfigHandler:
 
 pointspath = "savedata/points.json"
 
+@discord.app_commands.default_permissions(manage_roles=True)
 class GuildConfig(commands.GroupCog, group_name="config"):
     def __init__(self, client: commands.Bot):
         self.client = client
@@ -380,7 +380,6 @@ class Levels(commands.Cog):
             return
         guildconfig = ConfigHandler.guilds[message.guild.id]
         guildid = str(message.guild.id)
-        print(f"message received in {guildid}")
         if guildconfig is None:
             print(f"ConfigHandler.guilds[{guildid}] is None!")
             point_range_lower = self.default_point_range_lower
@@ -400,7 +399,7 @@ class Levels(commands.Cog):
 
         if self.is_recent_sender(guild_id, author_id):
             stamp = f"{guild_name}: recent sender {message.author.name} not awarded points"
-            print(stamp)
+            #print(stamp)
             return
         else:
             self.add_recent_sender(guild_id, author_id)
@@ -418,7 +417,7 @@ class Levels(commands.Cog):
             if userlevel != newuserlevel: # if the user levelled up
                 self.rolelevelpass(message.guild, message.author, newuserlevel)
                 stamp += f"user {message.author.name} levelled up to level {newuserlevel}"
-            print(stamp)
+            #print(stamp)
         
 
     @discord.app_commands.command(name="get_level", description="fetch the level of a user")
@@ -444,6 +443,7 @@ class Levels(commands.Cog):
             await interaction.response.send_message(f"{user.mention} is {stamp}")
 
     @discord.app_commands.command(name="add_points", description="add points to a user")
+    @commands.has_permissions(manage_roles=True)
     async def add_points(self, interaction: discord.Interaction, user: discord.Member, points: int):
         guild_id = str(interaction.guild.id)
         user_id = str(user.id)
