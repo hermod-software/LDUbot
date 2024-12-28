@@ -1,4 +1,5 @@
 # LDU (Loritsi Discord Utility) bot
+WRITTEN ON PYTHON VERSION 3.12.8
 
 ## features
 
