@@ -181,7 +181,7 @@ class GuildConfig(commands.GroupCog, group_name="config"):
             await interaction.response.send_message("configuration not found for this guild.")
             return
         
-        config = guild_config.config
+        config = copy.deepcopy(guild_config.config)
         roles = config["roles"]
         upd_roles = {}
 
