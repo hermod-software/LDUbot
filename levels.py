@@ -173,7 +173,7 @@ class GuildConfig(commands.GroupCog, group_name="config"):
         await interaction.response.send_message(f"point range is {lower} - {upper}")
 
     @discord.app_commands.command(name="reset_config", description="reset the configuration for this guild")
-    @commands.has_permissions(manage_guild=True)
+    @discord.app_commands.default_permissions(manage_roles=True)
     async def reset_config(self, interaction: discord.Interaction):
         guild_config = ConfigHandler.guilds.get(interaction.guild.id)
         if not guild_config:
@@ -443,7 +443,7 @@ class Levels(commands.Cog):
             await interaction.response.send_message(f"{user.mention} is {stamp}")
 
     @discord.app_commands.command(name="add_points", description="add points to a user")
-    @discord.app_commands.checks.has_permissions(manage_roles=True)
+    @discord.app_commands.default_permissions(manage_roles=True)
     async def add_points(self, interaction: discord.Interaction, user: discord.Member, points: int):
         guild_id = str(interaction.guild.id)
         user_id = str(user.id)
