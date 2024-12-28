@@ -488,7 +488,7 @@ class Levels(commands.Cog):
         await interaction.response.send_message(leaderboard)
 
     @discord.app_commands.command(name="reset_points", description="reset the points for the whole server")
-    @discord.app_commands.checks.has_permissions(manage_roles=True)
+    @discord.app_commands.default_permissions(manage_roles=True)
     async def reset_points(self, interaction: discord.Interaction):
         if interaction.guild is None:
             await interaction.response.send_message("this command must be used in a server!")
