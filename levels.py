@@ -263,20 +263,20 @@ class Levels(commands.Cog):
         base = guild.getconfig("base")
         growth_rate = guild.getconfig("growth_rate")
         level = 0
-        total_required = base  # Points required for the current level
-        cumulative_points = 0  # Total points required to reach the current level
+        total_required = base                       # points required for the current level
+        cumulative_points = 0                       # total points required to reach the current level
 
         while points >= total_required:
-            cumulative_points += total_required  # Add points needed for the current level
-            points -= total_required  # Deduct points for the current level
-            level += 1  # Increment level
-            total_required = math.floor(base * (growth_rate ** level))  # Points needed for the next level
+            cumulative_points += total_required     # add points needed for the current level
+            points -= total_required                # deduct points for the current level
+            level += 1                              # increment level
+            total_required = math.floor(base * (growth_rate ** level))  # points needed for the next level
 
-        # Calculate points remaining to reach the next level
+        # calculate points remaining to reach the next level
         remaining_points = total_required - points
 
-        # Debug output to trace calculations
-        print(f"Level: {level}, Points Remaining: {points} Next Level Threshold: {total_required}, Remaining Points to Next Level: {remaining_points}")
+        # debug output to trace calculations
+        #print(f"Level: {level}, Points Remaining: {points} Next Level Threshold: {total_required}, Remaining Points to Next Level: {remaining_points}")
 
         return level, remaining_points
 
