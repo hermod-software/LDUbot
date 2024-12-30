@@ -40,7 +40,7 @@ class ConfigHandler:
         file_path = f"{dir_path}/config.yml"
 
         if not os.path.exists(dir_path):
-            os.mkdir(dir_path)
+            os.makedirs(dir_path)
 
         try:
             with open(file_path, "w") as file:

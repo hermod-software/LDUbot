@@ -10,18 +10,7 @@ from blacklist import readblacklist, blacklistuser, unblacklistuser, isblacklist
 
 
 
-latentmessages = [] # this variable is used to temporarily store messages that are then logged to log.txt every 30 seconds
 blacklist = []      # this list will store the hashed usernames of users who have opted out of logging
-
-async def log():    # log messages to log.txt every 30 seconds
-    global latentmessages
-    await client.wait_until_ready()
-    while not client.is_closed():
-        if not latentmessages == []:    # don't bother opening the file if there's nothing to write
-            with open("log.txt", "a", encoding="utf-8", errors="replace") as file: # open the file in append mode
-                file.writelines(latentmessages) # write all the messages in the list to the file
-        latentmessages = []
-        await asyncio.sleep(30) # wait 30 seconds (asyncio doesn't block the event loop)
 
 async def synctrees():
     print(f"Syncing commands list...", end="")
@@ -37,24 +26,18 @@ async def on_ready():
         print(f" - {guild.name}")
         
     await client.load_extension("levels")
+    await client.load_extension("mapchart")
+
     await synctrees()
     print("Commands loaded:")
     for command in tree.get_commands():
         print(f" - {command.name}")
 
-    asyncio.create_task(log())
-    print("Started logging to log.txt")
     blacklist = readblacklist() # load the blacklist from the file
     testblacklist(blacklist) # run the test function to make sure the blacklist functions work (it'll crash if they don't)
     print(f"Loaded & tested blacklist")
 
-
-
-# @client.event
-# async def on_message(message):
-#     if message.author == client.user:
-#         return
-    
+ 
 @client.event
 async def on_guild_join(guild):
     print(f"Joined guild:")
@@ -101,12 +84,10 @@ async def add_role_to_members(interaction: discord.Interaction, target: discord.
             print(error)
             errors.append(error)
             interaction.followup.send(error)
-        latentmessages.extend(errors)
     username = interaction.user.name
     if isblacklisted(username):
         username = "(redacted username)"
     stamp = f"user {username} added role \"{add.name}\" to {added_count}/{len(member)} members of role \"{target.name}\""
-    latentmessages.append(stamp)
     print(stamp)
     await message.edit(stamp)
 
@@ -135,7 +116,7 @@ import os
 
 @tree.command(name="send_dev_message", description="send a message or suggestion to the developer (anonymous)")
 async def send_dev_message(interaction: discord.Interaction, message: str):
-    global blacklist, latentmessages
+    global blacklist
     if isblacklisted(interaction.user.name, blacklist):
         await interaction.response.send_message(f"while i really appreciate your feedback, your privacy settings don't allow me to save your message:\n`{message}`\nyou can do /privacy False to change your privacy settings.", ephemeral=True)
         message = None
@@ -149,7 +130,6 @@ async def send_dev_message(interaction: discord.Interaction, message: str):
             file.write(f"\t- {message}\n")
 
         stamp = f"message received and will be saved anonymously: \n`{message}`\nthanks for your feedback :)"    
-        latentmessages.append(stamp)
         print(f"new message: {message}")                                     
         await interaction.response.send_message(stamp, ephemeral=True) # send confirmation message
     except Exception as e: # if something goes wrong send an error message
