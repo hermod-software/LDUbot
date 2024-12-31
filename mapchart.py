@@ -112,7 +112,7 @@ async def fetch_image(config, mapname, user="no_user"):
         print("hiding legend...")
         legend_status = driver.find_element(By.ID, 'legend-status')
         select = Select(legend_status)
-        select.select_by_value("hide")
+        select.select_by_value("title")
 
         maptitle = driver.find_element(By.ID, 'map-title')
         driver.execute_script("arguments[0].value = arguments[1];", maptitle, user)
