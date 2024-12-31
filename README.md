@@ -9,6 +9,7 @@ requires the creation of bot_token.txt in the root directory with your bot token
 - role managers can assign level-role rewards
 - users can send feedback messages that are saved to devmessages.txt
 - users can opt out of any operations that would save their data (UK GDPR compliance)
+- users can get submit mapchart configuration either from a txt directly uploaded or as an existing message attachment and receive the map image in return
 
 ## priorities:
 
