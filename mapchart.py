@@ -8,14 +8,15 @@ from selenium.webdriver.support.ui import Select
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.firefox.service import Service
 import os
+import yaml
+import discord
+from discord.ext import commands, tasks
 
 download_dir = "./downloads/image"
 download_dir = os.path.abspath(download_dir)
 
 gecko_driver = "./geckodriver.exe"
 BASE_URL = "https://mapchart.net/"
-
-  
 
 async def fetch_image(config, mapname, user="no_user"):
 
@@ -34,7 +35,7 @@ async def fetch_image(config, mapname, user="no_user"):
     options.set_preference("browser.download.dir", download_dir)
     options.set_preference("browser.helperApps.neverAsk.saveToDisk", "image/png")
     options.set_preference("browser.download.useDownloadDir", True)
-    #options.add_argument("--headless")
+    options.add_argument("--headless")
 
 
     driver = webdriver.Firefox(
@@ -116,7 +117,7 @@ async def fetch_image(config, mapname, user="no_user"):
             await asyncio.sleep(1.5)
             if waits > 20:
                 print("download failed, giving up")
-                return None
+                return None, "failed to download"
             files = os.listdir(download_dir)
             downloadstarted = os.path.exists(os.path.join(download_dir, f"{user}.png"))
             if not any([f.endswith(".part") for f in files]) and downloadstarted:
@@ -130,7 +131,6 @@ async def fetch_image(config, mapname, user="no_user"):
     finally:
         driver.quit() # close the browser
         print("driver closed")
-        print(f"files should be saved in: {os.path.abspath(download_dir)}")
     return filename
 
 async def main():
@@ -142,3 +142,53 @@ async def main():
 if __name__ == "__main__":
     asyncio.run(main())
 
+class Mapchart(commands.Cog):
+    def __init__(self, client: commands.Bot):
+        self.client = client
+
+    @commands.Cog.listener()
+    async def on_ready(self):
+        if os.path.exists("savedata/mapchart.yml"):
+            with open("savedata/mapchart.yml", "r") as f:
+                self.config = yaml.safe_load(f)
+        print("Mapchart cog loaded")
+
+    @discord.app_commands.command(name="mapchart", description="generate a mapchart image from a txt attachment")
+    async def mapchart(self, interaction: discord.Interaction, mapchart_txt: discord.Attachment, mapchart_url: str):
+        file = mapchart_txt
+
+        try: 
+            config = await file.read()            # read the file as bytes
+            config = config.decode("utf-8") # turn it into utf-8
+        except Exception as e:
+            print("failed to read and decode the file (possibly corrupted)")
+        user = interaction.user.name    # get the user's username
+
+
+        if not file.filename.endswith(".txt"):
+            await interaction.followup.send("the file must be a .txt file")
+            return
+        
+        await interaction.response.defer()  # we can't respond straight away so we need to defer the response
+
+        filename = await fetch_image(config, mapchart_url, user) # this bit takes a while and returns the filename of the downloaded map
+
+        if filename is None:
+            await interaction.followup.send("the download failed, please try again (or report this as a bug on the github page)")
+            return
+
+        try:
+            await interaction.followup.send(
+                content="mapchart image saved:",
+                file=discord.File(filename)
+            )
+        except FileNotFoundError:
+            await interaction.followup.send("the file was downloaded, but it couldn't be found. please try again (or report this as a bug on the github page)")
+
+        if os.path.exists(filename):
+            os.remove(filename)
+        
+
+
+async def setup(client):
+    await client.add_cog(Mapchart(client))

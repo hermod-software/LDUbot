@@ -7,12 +7,6 @@ import math
 import os
 import copy
 
-import discord
-from discord.ext import commands
-import yaml
-import os
-import copy
-
 class ConfigHandler:
     guilds = {}
     defaultconfig = {
