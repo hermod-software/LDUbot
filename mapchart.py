@@ -88,21 +88,21 @@ async def fetch_image(config, mapname, user="no_user"):
 
         print("waiting for map to load in...")
 
-        await asyncio.sleep(2)   
+        await asyncio.sleep(5)   
 
         print("opening legend options...")
         legend_options = driver.find_element(By.ID, 'advanced-legend-btn')
         attempts = 0
         while True:
-            if attempts > 10:
+            if attempts > 20:
                 print("failed to open legend options")
-                return None, "failed to open legend options"
+                return None
             try:
                 legend_options.click()
                 break
             except Exception:
                 attempts += 1
-                await asyncio.sleep(0.5)
+                await asyncio.sleep(1)
                 pass
         await asyncio.sleep(0.1)
         print("hiding legend...")
@@ -128,7 +128,7 @@ async def fetch_image(config, mapname, user="no_user"):
             await asyncio.sleep(1.5)
             if waits > 20:
                 print("download failed, giving up")
-                return None, "failed to download"
+                return None
             files = os.listdir(download_dir)
             downloadstarted = os.path.exists(os.path.join(download_dir, f"{user}.png"))
             if not any([f.endswith(".part") for f in files]) and downloadstarted:
