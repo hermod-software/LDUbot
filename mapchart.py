@@ -99,11 +99,15 @@ async def fetch_image(config, mapname, user="no_user"):
                 return None
             try:
                 legend_options.click()
+                
                 break
             except Exception:
-                attempts += 1
-                await asyncio.sleep(1)
-                pass
+                try:
+                    uploadbutton.click() # click the upload button again to make sure the config is applied
+                except Exception:
+                    attempts += 1
+                    await asyncio.sleep(1)
+                    pass
         await asyncio.sleep(0.1)
         print("hiding legend...")
         legend_status = driver.find_element(By.ID, 'legend-status')
