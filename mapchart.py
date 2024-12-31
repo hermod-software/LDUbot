@@ -153,6 +153,39 @@ async def main():
 if __name__ == "__main__":
     asyncio.run(main())
 
+async def process_mapchart(interaction: discord.Interaction, file: discord.Attachment, mapchart_url: str):
+    try: 
+        config = await file.read()            # read the file as bytes
+        config = config.decode("utf-8") # turn it into utf-8
+    except Exception as e:
+        print("failed to read and decode the file (possibly corrupted)")
+    user = interaction.user.name    # get the user's username
+
+
+    if not file.filename.endswith(".txt"):
+        await interaction.followup.send("the file must be a .txt file")
+        return
+    
+    await interaction.response.defer()  # we can't respond straight away so we need to defer the response
+
+    filename = await fetch_image(config, mapchart_url, user) # this bit takes a while and returns the filename of the downloaded map
+
+    if filename is None:
+        await interaction.followup.send("the command failed, please try again (or report this as a bug on the github page)")
+        return
+
+    try:
+        await interaction.followup.send(
+            content="mapchart image saved:",
+            file=discord.File(filename)
+        )
+    except FileNotFoundError:
+        await interaction.followup.send("the file was downloaded, but it couldn't be found. please try again (or report this as a bug on the github page)")
+
+    if os.path.exists(filename):
+        os.remove(filename) # delete the file after sending it (we don't need it anymore)
+
+
 class Mapchart(commands.Cog):
     def __init__(self, client: commands.Bot):
         self.client = client
@@ -164,41 +197,29 @@ class Mapchart(commands.Cog):
                 self.config = yaml.safe_load(f)
         print("Mapchart cog loaded")
 
-    @discord.app_commands.command(name="mapchart", description="generate a mapchart image from a txt attachment")
+
+
+    @discord.app_commands.command(name="mapchart_from_file", description="get a mapchart image from a txt attachment")
     async def mapchart(self, interaction: discord.Interaction, mapchart_txt: discord.Attachment, mapchart_url: str):
         file = mapchart_txt
+        await process_mapchart(interaction, file, mapchart_url)
 
-        try: 
-            config = await file.read()            # read the file as bytes
-            config = config.decode("utf-8") # turn it into utf-8
-        except Exception as e:
-            print("failed to read and decode the file (possibly corrupted)")
-        user = interaction.user.name    # get the user's username
-
-
-        if not file.filename.endswith(".txt"):
-            await interaction.followup.send("the file must be a .txt file")
+    @discord.app_commands.command(name="mapchart_from_id", description="get a mapchart image from message ID")
+    async def mapchart_url(self, interaction: discord.Interaction, id: str, mapchart_url: str):
+        message = await interaction.channel.fetch_message(id)
+        if not message.attachments:
+            await interaction.response.send_message("the message must have an attachment")
             return
         
-        await interaction.response.defer()  # we can't respond straight away so we need to defer the response
+        attachments = message.attachments
 
-        filename = await fetch_image(config, mapchart_url, user) # this bit takes a while and returns the filename of the downloaded map
+        for attachment in attachments:
+            if attachment.filename.endswith(".txt"):
+                file = attachment
+                break
 
-        if filename is None:
-            await interaction.followup.send("the download failed, please try again (or report this as a bug on the github page)")
-            return
+        await process_mapchart(interaction, file, mapchart_url)
 
-        try:
-            await interaction.followup.send(
-                content="mapchart image saved:",
-                file=discord.File(filename)
-            )
-        except FileNotFoundError:
-            await interaction.followup.send("the file was downloaded, but it couldn't be found. please try again (or report this as a bug on the github page)")
-
-        if os.path.exists(filename):
-            os.remove(filename)
-        
 
 
 async def setup(client):
