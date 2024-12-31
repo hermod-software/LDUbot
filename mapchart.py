@@ -88,7 +88,7 @@ async def fetch_image(config, mapname, user="no_user"):
 
         print("waiting for map to load in...")
 
-        await asyncio.sleep(4)        
+        await asyncio.sleep(6)        
 
         print("opening legend options...")
         legend_options = driver.find_element(By.ID, 'advanced-legend-btn')
