@@ -94,7 +94,7 @@ async def fetch_image(config, mapname, user="no_user"):
         legend_options = driver.find_element(By.ID, 'advanced-legend-btn')
         attempts = 0
         while True:
-            if attempts > 20:
+            if attempts > 60:
                 print("failed to open legend options")
                 return None
             try:
