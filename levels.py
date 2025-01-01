@@ -463,7 +463,8 @@ class Levels(commands.Cog):
             username = interaction.guild.get_member(int(user_id))
             if username is None:
                 username = "could not resolve username"
-            username = username.name
+            if not isinstance(username, str):
+                username = username.name
             level, tonextlevel = self.get_level_from_points(user_points, guild_id)
 
             if i in self.emojis.keys():
