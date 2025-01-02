@@ -438,7 +438,8 @@ class Levels(commands.Cog):
             return
         
         guild_id = str(interaction.guild.id)
-        displayname = displayname = unicodedata.normalize("NFKD", displayname)                # normalise the display name
+        displayname = user.display_name
+        displayname = unicodedata.normalize("NFKD", displayname)                # normalise the display name
         user_id = str(user.id)
         points = self.points.get(guild_id, {}).get(user_id, 0)
         level, tonextlevel = self.get_level_from_points(points, guild_id)
