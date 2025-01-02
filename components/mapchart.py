@@ -49,17 +49,15 @@ async def fetch_image(config, mapname, user="no_user"):
         print(f"accessing {full_url}")
         driver.get(full_url)
         print("waiting for page to load...")
-        asyncio.sleep(2)
-        print("page loaded!")
-
-        print("clicking agree button...")
+        await asyncio.sleep(2)
         try:
             agree_button = driver.find_element(By.XPATH, "//button[text()='Agree and proceed']")
             agree_button.click()
             print("clicked agree to cookies button")
-            await asyncio.sleep(0.5)
+            await asyncio.sleep(0.5) # wait for the fadeout animation to finish
         except Exception:
             print("no agree button found, continuing...")
+            pass
 
         try:
             vic3continue = driver.find_element(By.ID, 'vic3-continue-btn')
@@ -67,6 +65,7 @@ async def fetch_image(config, mapname, user="no_user"):
             print("clicked vic3 continue button")
             await asyncio.sleep(0.5) # wait for the fadeout animation to finish
         except Exception:
+            print("no vic3 button found, continuing...")
             pass
 
 
