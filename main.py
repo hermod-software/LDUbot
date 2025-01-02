@@ -5,8 +5,8 @@ import hashlib
 import yaml
 import os
 
-from shared import client, tree
-from blacklist import readblacklist, blacklistuser, unblacklistuser, isblacklisted, testblacklist
+from components.shared import client, tree
+from components.blacklist import readblacklist, blacklistuser, unblacklistuser, isblacklisted, testblacklist
 
 
 
@@ -25,8 +25,8 @@ async def on_ready():
     for guild in client.guilds:
         print(f" - {guild.name}")
         
-    await client.load_extension("levels")
-    await client.load_extension("mapchart")
+    await client.load_extension("components.levels")
+    await client.load_extension("components.mapchart")
 
     await synctrees()
     print("Commands loaded:")
