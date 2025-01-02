@@ -6,6 +6,7 @@ import random
 import math
 import os
 import copy
+import unicodedata
 
 import components.graphic as graphic
 
@@ -437,13 +438,14 @@ class Levels(commands.Cog):
             return
         
         guild_id = str(interaction.guild.id)
+        displayname = displayname = unicodedata.normalize("NFKD", displayname)                # normalise the display name
         user_id = str(user.id)
         points = self.points.get(guild_id, {}).get(user_id, 0)
         level, tonextlevel = self.get_level_from_points(points, guild_id)
         percent = (points / (points + tonextlevel)) * 100
         index = self.get_leaderboard_position(guild_id, user_id)
         
-        entry = [user.display_name, user.name, level, points, percent, tonextlevel, index]
+        entry = [displayname, user.name, level, points, percent, tonextlevel, index]
 
         for i, item in enumerate(entry):
             if item is None:
@@ -495,7 +497,7 @@ class Levels(commands.Cog):
 
             level, tonextlevel = self.get_level_from_points(user_points, guild_id)  # get the user's level and points to next level
             percentage = (user_points / (user_points + tonextlevel)) * 100          # calculate the percentage of points to next level
-
+            displayname = unicodedata.normalize("NFKD", displayname)                # normalise the display name
 
             entry = (str(displayname), str(username), int(level), int(percentage), int(tonextlevel))   # create a tuple with the user's name, level, and percentage to next level
             leaderboard.append(entry)               # add the tuple to the leaderboard
