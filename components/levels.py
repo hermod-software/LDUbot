@@ -7,6 +7,8 @@ import math
 import os
 import copy
 
+import components.graphic as graphic
+
 class ConfigHandler:
     guilds = {}
     defaultconfig = {
@@ -414,8 +416,16 @@ class Levels(commands.Cog):
             #print(stamp)
         
 
-    @discord.app_commands.command(name="get_level", description="fetch the level of a user")
-    async def get_points(self, interaction: discord.Interaction, user: discord.Member=None):
+    def get_leaderboard_position(self, guild_id, user_id):
+        points = self.points.get(guild_id, {})
+        sortedpoints = sorted(points.items(), key=lambda x: x[1], reverse=True)
+        for i, (id, _) in enumerate(sortedpoints):
+            if id == user_id:
+                return i
+        return None
+
+    @discord.app_commands.command(name="rank", description="fetch the level of a user")
+    async def rank(self, interaction: discord.Interaction, user: discord.Member=None):
         targetisinvoker = False
 
         if user is None or user == interaction.user:
@@ -430,11 +440,24 @@ class Levels(commands.Cog):
         user_id = str(user.id)
         points = self.points.get(guild_id, {}).get(user_id, 0)
         level, tonextlevel = self.get_level_from_points(points, guild_id)
-        stamp = f"level {level} ({points} points) with {tonextlevel} points until next level"
-        if targetisinvoker:
-            await interaction.response.send_message(f"you are {stamp}")
-        else:
-            await interaction.response.send_message(f"{user.mention} is {stamp}")
+        percent = (points / (points + tonextlevel)) * 100
+        index = self.get_leaderboard_position(guild_id, user_id)
+        
+        entry = [user.display_name, user.name, level, points, percent, tonextlevel, index]
+
+        for i, item in enumerate(entry):
+            if item is None:
+                entry[i] = "X"
+
+        entry = tuple(entry)
+
+        userpath = graphic.user_level_image(entry)
+
+        try:
+            with open(userpath, "rb") as file:
+                await interaction.response.send_message(file=discord.File(file))
+        except FileNotFoundError:
+            await interaction.response.send_message("we lost track of the user level image, please try again")
 
     @discord.app_commands.command(name="add_points", description="add points to a user")
     @discord.app_commands.default_permissions(manage_roles=True)
@@ -449,38 +472,46 @@ class Levels(commands.Cog):
 
 
 
-    @discord.app_commands.command(name="get_leaderboard", description="fetch the top users by points")
-    async def get_leaderboard(self, interaction: discord.Interaction, pages: int=1):
+    @discord.app_commands.command(name="leaderboard", description="fetch the top users by points")
+    async def leaderboard(self, interaction: discord.Interaction, pages: int=1):
         if interaction.guild is None:
             await interaction.response.send_message("this command must be used in a server!")
             return
-        guild_id = str(interaction.guild.id)
-        guild_name = interaction.guild.name
-        points = self.points.get(guild_id, {})
-        sortedpoints = sorted(points.items(), key=lambda x: x[1], reverse=True) # sort users by points
-        leaderboard = [] #
-        for i, (user_id, user_points) in enumerate(sortedpoints):
-            username = interaction.guild.get_member(int(user_id))
-            if username is None:
-                username = "could not resolve username"
-            if not isinstance(username, str):
-                username = username.name
-            level, tonextlevel = self.get_level_from_points(user_points, guild_id)
 
-            if i in self.emojis.keys():
-                emoji = self.emojis.get(i, "")
-            else:
-                emoji = self.otheremoji
+        guild_id = str(interaction.guild.id)        # get the guild ID
+        guild_name = interaction.guild.name         # get the guild name
+        points = self.points.get(guild_id, {})      # get the points for the guild
+        sortedpoints = sorted(points.items(), key=lambda x: x[1], reverse=True)  # sort users by points
+        leaderboard = [] # list to store the leaderboard
 
-            leaderboard.append(f"{emoji} `[Level {level}]` **{username}** `{user_points} points, {tonextlevel} to next level`")
-        header = f"# `Leaderboard for {guild_name}`"
-        leaderboard = leaderboard[:(pages * 10)]
+        for i, (user_id, user_points) in enumerate(sortedpoints): # iterate over the sorted points list
+            username = interaction.guild.get_member(int(user_id)) # get the user object from the user ID
+            if username is None:                            # if there is no user for some reason
+                username = "(no user)"                      # set the username to an error message
+                displayname = username    
+            if not isinstance(username, str):       # if the user is not a string (i.e. it's a user object and not an error message or something)
+                displayname = username.display_name # get the user's display name
+                username = username.name            # get the user's username
+
+            level, tonextlevel = self.get_level_from_points(user_points, guild_id)  # get the user's level and points to next level
+            percentage = (user_points / (user_points + tonextlevel)) * 100          # calculate the percentage of points to next level
+
+
+            entry = (str(displayname), str(username), int(level), int(percentage), int(tonextlevel))   # create a tuple with the user's name, level, and percentage to next level
+            leaderboard.append(entry)               # add the tuple to the leaderboard
+            
+        startindex = (pages - 1) * 10
+        endindex = pages * 10
+        truncleaderboard = leaderboard[startindex:endindex] # truncate the leaderboard to the number of pages requested
+        maxpages = math.ceil(len(leaderboard) / 10)
+        imagepath = graphic.leaderboard_image(truncleaderboard, guild_name, pages, maxpages) # create the leaderboard image
+
+        try:
+            with open(imagepath, "rb") as file:
+                await interaction.response.send_message(file=discord.File(file))
+        except FileNotFoundError:
+            await interaction.response.send_message("we lost track of the leaderboard image, please try again")
         
-        leaderboard = '\n'.join(leaderboard)
-        leaderboard = header + '\n' + leaderboard
-        
-        leaderboard = leaderboard + f"\n-# (max items: {pages * 10})"
-        await interaction.response.send_message(leaderboard)
 
     @discord.app_commands.command(name="reset_points", description="reset the points for the whole server")
     @discord.app_commands.default_permissions(manage_roles=True)
