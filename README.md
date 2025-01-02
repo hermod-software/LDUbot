@@ -21,8 +21,8 @@ requires the creation of bot_token.txt in the root directory with your bot token
 
 - [ ] implement privacy settings on leveling system
 - [x] implement per-guild customisable role-level rewards
-- [ ] implement a graphical image version of the level checker
-- [ ] implement a graphical image version of the leaderboard checker
+- [x] implement a graphical image version of the level checker
+- [x] implement a graphical image version of the leaderboard checker
 
 
 to think about:
