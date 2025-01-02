@@ -246,23 +246,47 @@ def user_level_image(entry):
     image.paste(progress, (5,circletop), mask)
 
     titlebounds = Bounds(draw.textbbox((0,0), displayname, font=BODY))
+    trunc = False
+    while titlebounds.right > WIDTH-45:
+        trunc = True
+        displayname = displayname[:-1]
+        titlebounds = Bounds(draw.textbbox((0,0), displayname, font=BODY))
+        if len(displayname) < 5:
+            trunc = None
+            break
+    if trunc == True:
+        displayname = displayname[:-3] + "..."
+        trunc = False
+    if trunc == None:
+        displayname = ""
+
     draw.text((10, 10), displayname, font=BODY, fill=TEXT_WHITE)
 
     trunc = False
-
-    if username != displayname:
-        userpos = (titlebounds.right + 15, titlebounds.bottom-3)
-        userbounds = Bounds(draw.textbbox(userpos, f"({username})", font=BODY_LIGHT))
-        if userbounds.right > WIDTH:
-            trunc = True
-            username = username[:-1]
-            userbounds = Bounds(draw.textbbox(userpos, f"({username})", font=BODY_LIGHT))
-        if trunc == True:
-            username = username[:-3] + "..."
-        draw.text(userpos, f"({username})", font=TINY_LIGHT, fill=TEXT_WHITE)
-        rightbound = userbounds.right
+    if username.lower() != displayname.lower():
+        usernameisdisplayname = False
     else:
-        rightbound = titlebounds.right
+        usernameisdisplayname = True
+
+    userpos = (titlebounds.right + 20, 13)
+    ogusername = username # save the original username for the filename
+    trunc = False
+    userbounds = Bounds(draw.textbbox(userpos, f"({username})", font=TINY_LIGHT))
+    while userbounds.right > WIDTH-45:
+        trunc = True
+        username = username[:-1]
+        userbounds = Bounds(draw.textbbox(userpos, f"({username})", font=TINY_LIGHT))
+        if len(username) < 6:
+            trunc = None
+            break
+    if trunc == True:
+        username = username[:-3] + "..."
+        trunc = False
+    elif trunc == None:
+        username = ""
+
+    if not username == "" and not usernameisdisplayname:
+        draw.text(userpos, f"({username})", font=TINY_LIGHT, fill=TEXT_WHITE)
 
     draw.text((0, 14), f"{"_ " * 60}", font=BODY_LIGHT, fill=TEXT_GRURPLE) # dashed underline
 
@@ -273,7 +297,7 @@ def user_level_image(entry):
         index = index+1
     draw.text((WIDTH-10, 10), f"#{index}", font=BODY, fill=TEXT_WHITE, anchor="rt")
 
-    savepath = f"{USERPATH}{username}.png"
+    savepath = f"{USERPATH}{ogusername}.png"
 
     image.save(savepath)
     return savepath
