@@ -476,7 +476,7 @@ class Levels(commands.Cog):
 
 
     @discord.app_commands.command(name="leaderboard", description="fetch the top users by points")
-    async def leaderboard(self, interaction: discord.Interaction, pages: int=1):
+    async def leaderboard(self, interaction: discord.Interaction, page: int=1):
         if interaction.guild is None:
             await interaction.response.send_message("this command must be used in a server!")
             return
@@ -503,11 +503,11 @@ class Levels(commands.Cog):
             entry = (str(displayname), str(username), int(level), int(percentage), int(tonextlevel))   # create a tuple with the user's name, level, and percentage to next level
             leaderboard.append(entry)               # add the tuple to the leaderboard
             
-        startindex = (pages - 1) * 10
-        endindex = pages * 10
+        startindex = (page - 1) * 10
+        endindex = page * 10
         truncleaderboard = leaderboard[startindex:endindex] # truncate the leaderboard to the number of pages requested
         maxpages = math.ceil(len(leaderboard) / 10)
-        imagepath = graphic.leaderboard_image(truncleaderboard, guild_name, pages, maxpages) # create the leaderboard image
+        imagepath = graphic.leaderboard_image(truncleaderboard, guild_name, page, maxpages) # create the leaderboard image
 
         try:
             with open(imagepath, "rb") as file:

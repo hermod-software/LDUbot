@@ -163,6 +163,13 @@ def user_unit(displayname, username, level, percent, tonextlevel, index, right=2
 
 @timefunction
 def leaderboard_image(leaderboard, guildname, page, maxpages):
+
+    if page > 1:
+        firstpage = False
+    else:
+        firstpage = True
+
+
     for i in range(len(leaderboard), 10):
         leaderboard.append(leaderboard[0])
     WIDTH = 600 
@@ -191,7 +198,7 @@ def leaderboard_image(leaderboard, guildname, page, maxpages):
         level = int(user[2])
         percent = int(user[3])
         tonextlevel = int(user[4])
-        unit, mask = user_unit(displayname, username, level, percent, tonextlevel, i, firstpage=True)
+        unit, mask = user_unit(displayname, username, level, percent, tonextlevel, i, firstpage=firstpage)
         image.paste(unit, (xpos, ypos), mask)
         ypos += 60
 
