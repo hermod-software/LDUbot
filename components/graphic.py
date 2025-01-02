@@ -252,11 +252,11 @@ def user_level_image(entry):
 
     if username != displayname:
         userpos = (titlebounds.right + 15, titlebounds.bottom-3)
-        userbounds = Bounds(draw.textbbox((0,0), f"({username})", font=BODY_LIGHT))
+        userbounds = Bounds(draw.textbbox(userpos, f"({username})", font=BODY_LIGHT))
         if userbounds.right > WIDTH:
             trunc = True
             username = username[:-1]
-            userbounds = Bounds(draw.textbbox((0,0), f"({username})", font=BODY_LIGHT))
+            userbounds = Bounds(draw.textbbox(userpos, f"({username})", font=BODY_LIGHT))
         if trunc == True:
             username = username[:-3] + "..."
         draw.text(userpos, f"({username})", font=TINY_LIGHT, fill=TEXT_WHITE)
