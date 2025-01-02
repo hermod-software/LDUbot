@@ -424,8 +424,8 @@ class Levels(commands.Cog):
                 return i
         return None
 
-    @discord.app_commands.command(name="get_level", description="fetch the level of a user")
-    async def get_points(self, interaction: discord.Interaction, user: discord.Member=None):
+    @discord.app_commands.command(name="rank", description="fetch the level of a user")
+    async def rank(self, interaction: discord.Interaction, user: discord.Member=None):
         targetisinvoker = False
 
         if user is None or user == interaction.user:
@@ -472,8 +472,8 @@ class Levels(commands.Cog):
 
 
 
-    @discord.app_commands.command(name="get_leaderboard", description="fetch the top users by points")
-    async def get_leaderboard(self, interaction: discord.Interaction, pages: int=1):
+    @discord.app_commands.command(name="leaderboard", description="fetch the top users by points")
+    async def leaderboard(self, interaction: discord.Interaction, pages: int=1):
         if interaction.guild is None:
             await interaction.response.send_message("this command must be used in a server!")
             return
