@@ -9,6 +9,7 @@ import copy
 import unicodedata
 
 import components.graphic as graphic
+from components.levels.guildmember import GuildMember, GuildConfig
 
 class ConfigHandler:
     guilds = {}
