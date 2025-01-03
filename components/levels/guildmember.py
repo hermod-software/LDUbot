@@ -3,25 +3,30 @@ import discord
 from guildconfig import GuildConfig
 
 class GuildMember:
-    guilds = {}
+    guilds = {
+        # guildid: {userid: GuildMember}
+    }
 
-    def __init__(self, member: discord.Member, guildconfig: GuildConfig):
+    def __init__(self, member: discord.Member):
         self.displayname = member.display_name  # nickname if set, displayname otherwise, username if neither
         self.username = member.name             # username
         self.userid = member.id                 # user id
 
         self.guildid = member.guild.id          # server id
         self.guildname = member.guild.name      # server name
-        
-        self.points = 0
-        self.points_total = 0
-        self.level = 0
 
-        self.tonextlevel = 0
+        self.config = self.getconfig()          # server config
+        self.tonextlevel = self.config["base"]  # points needed to level up
+        
+        self.points = 0                 # points since last level up
+        self.points_total = 0           # total points
+        self.level = 0                  # current level
+
+        
 
         self.roles = member.roles
 
-        GuildMember.guilds[self.guildid] = self
+        GuildMember.guilds[self.guildid][self.userid] = self
 
     def __str__(self):
         stringed = []
@@ -30,8 +35,15 @@ class GuildMember:
         stringed.append(f"points: {self.points} (level {self.level})\n")
         return ''.join(stringed)
     
+    def getconfig(self):
+        config = GuildConfig.guilds[self.guildid].config
+        return config
+    
+    def calculate_level(self, amount):
+        
+    
     def increment_points(self, amount: int):
-        self.points += amount
+        pass
 
 
 

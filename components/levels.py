@@ -9,81 +9,10 @@ import copy
 import unicodedata
 
 import components.graphic as graphic
-from components.levels.guildmember import GuildMember, GuildConfig
+from components.levels.guildmember import GuildMember
+from components.levels.guildconfig import GuildConfig as ConfigHandler
 
-class ConfigHandler:
-    guilds = {}
-    defaultconfig = {
-        "base": 50,
-        "growth_rate": 1.2,
-        "point_range_upper": 5,
-        "point_range_lower": 1,
-        "roles": {}
-    }
-
-    def __init__(self, guild: discord.Guild):
-        self.guildid = guild.id
-        self.guildname = guild.name
-        self.config = {}
-
-        self.config = self.load()
-        print(f"config for {self.guildid} ({self.guildname}) loaded:\n{self.config}")
-        
-        if self.guildid not in ConfigHandler.guilds:
-            ConfigHandler.guilds[self.guildid] = self
-
-
-    def save(self):
-        dir_path = f"savedata/{self.guildid}"
-        file_path = f"{dir_path}/config.yml"
-
-        if not os.path.exists(dir_path):
-            os.makedirs(dir_path)
-
-        try:
-            with open(file_path, "w") as file:
-                yaml.dump(self.config, file)
-        except Exception as e:
-            print(f"Failed to save config for guild {self.guildid}: {e}")
-
-    def load(self):
-        if not os.path.exists(f"savedata/{self.guildid}/config.yml"):
-            self.config = copy.deepcopy(ConfigHandler.defaultconfig)
-            self.save()
-        else:
-            with open(f"savedata/{self.guildid}/config.yml", "r") as file:
-                self.config = yaml.safe_load(file)
-        return self.config
-
-    def setconfig(self, key, value):
-        self.config[key] = value
-        self.save()
-        return self.config[key]
-
-    def getconfig(self, key: str):
-        """ get a config value by key """
-        return self.config.get(key, None)
-
-    def delconfig(self, key):
-        if key in self.config:
-            del self.config[key]
-            self.save()
-            self.load()
-
-    def set_level_role(self, level: int, role: discord.Role):
-        roleid = role.id
-        self.config["roles"][level] = roleid
-        self.save()
-        return self.config["roles"][level]
-    
-    def del_level_role(self, level: int):
-        if level in self.config["roles"]:
-            del self.config["roles"][level]
-            self.save()
-            self.load()
-
-
-pointspath = "savedata/points.json"
+pointspath = "savedata/points.json" 
 
 @discord.app_commands.default_permissions(manage_roles=True)
 class GuildConfig(commands.GroupCog, group_name="config"):
