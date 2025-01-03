@@ -195,9 +195,9 @@ def leaderboard_image(leaderboard, guildname, page, maxpages):
             secondcolumn = True
         displayname = str(user[0])
         username = str(user[1])
-        level = int(user[2])
-        percent = int(user[3])
-        tonextlevel = int(user[4])
+        level = int(user[2]) # 3 is user overall points - not needed
+        percent = int(user[4])
+        tonextlevel = int(user[5])
         unit, mask = user_unit(displayname, username, level, percent, tonextlevel, i, firstpage=firstpage)
         image.paste(unit, (xpos, ypos), mask)
         ypos += 60

@@ -285,7 +285,24 @@ class Levels(commands.Cog):
 
         return level, remaining_points
 
+    def get_points_from_level(self, level, guild_id):
+        try:
+            guild_id = int(guild_id)
+        except ValueError:
+            print(f"Error converting guild_id {guild_id} to int")
+            return 0
 
+        if guild_id not in ConfigHandler.guilds:
+            print(f"Guild ID {guild_id} not found in ConfigHandler.guilds")
+            return 0
+
+        guild = ConfigHandler.guilds[guild_id]
+        base = guild.getconfig("base")
+        growth_rate = guild.getconfig("growth_rate")
+        points = 0
+        for i in range(level):
+            points += math.floor(base * (growth_rate ** i))
+        return points
 
         
 
@@ -445,7 +462,8 @@ class Levels(commands.Cog):
         user_id = str(user.id)
         points = self.points.get(guild_id, {}).get(user_id, 0)
         level, tonextlevel = self.get_level_from_points(points, guild_id)
-        percent = (points / (points + tonextlevel)) * 100
+        pointsthislevel = points - self.get_points_from_level(level, guild_id)
+        percent = (pointsthislevel / (pointsthislevel + tonextlevel)) * 100
         index = self.get_leaderboard_position(guild_id, user_id)
         
         entry = [displayname, user.name, level, points, percent, tonextlevel, index]
@@ -455,7 +473,7 @@ class Levels(commands.Cog):
                 entry[i] = "X"
 
         entry = tuple(entry)
-
+        print(f"rank entry:\ndisplayname: {displayname}\nusername: {user.name}\nlevel: {level}\npoints: {points}\npercentage: {percent}\ntonextlevel: {tonextlevel}\nindex: {index}")
         userpath = graphic.user_level_image(entry)
 
         try:
@@ -499,10 +517,12 @@ class Levels(commands.Cog):
                 username = username.name            # get the user's username
 
             level, tonextlevel = self.get_level_from_points(user_points, guild_id)  # get the user's level and points to next level
-            percentage = (user_points / (user_points + tonextlevel)) * 100          # calculate the percentage of points to next level
+            points_this_level = user_points - self.get_points_from_level(level, guild_id) # get the points the user has this level
+            percentage = (points_this_level / (points_this_level + tonextlevel)) * 100 # calculate the percentage to next level
             displayname = unicodedata.normalize("NFKD", displayname)                # normalise the display name
 
-            entry = (str(displayname), str(username), int(level), int(percentage), int(tonextlevel))   # create a tuple with the user's name, level, and percentage to next level
+            entry = (str(displayname), str(username), int(level), int(user_points), int(percentage), int(tonextlevel))   # create a tuple with the user's name, level, and percentage to next level
+            print(f"leaderboard entry:\ndisplayname: {displayname}\nusername: {username}\nlevel: {level}\npoints: {user_points}\npercentage: {percentage}\ntonextlevel: {tonextlevel}")
             leaderboard.append(entry)               # add the tuple to the leaderboard
             
         startindex = (page - 1) * 10
