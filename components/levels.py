@@ -333,6 +333,8 @@ class Levels(commands.Cog):
 
     async def rolelevelpass(self, guild: discord.Guild, member: discord.Member, level):
         async def giverole(member, role, guild):
+            if role in member.roles: # don't give the role if the user already has it
+                return
             try:
                 await member.add_roles(role)
                 print(f"added role {role.name} to {member.name}")
