@@ -473,7 +473,7 @@ class Levels(commands.Cog):
                 entry[i] = "X"
 
         entry = tuple(entry)
-        print(f"rank entry:\ndisplayname: {displayname}\nusername: {user.name}\nlevel: {level}\npoints: {points}\npercentage: {percent}\ntonextlevel: {tonextlevel}\nindex: {index}")
+        #print(f"rank entry:\ndisplayname: {displayname}\nusername: {user.name}\nlevel: {level}\npoints: {points}\npercentage: {percent}\ntonextlevel: {tonextlevel}\nindex: {index}")
         userpath = graphic.user_level_image(entry)
 
         try:
@@ -522,7 +522,7 @@ class Levels(commands.Cog):
             displayname = unicodedata.normalize("NFKD", displayname)                # normalise the display name
 
             entry = (str(displayname), str(username), int(level), int(user_points), int(percentage), int(tonextlevel))   # create a tuple with the user's name, level, and percentage to next level
-            print(f"leaderboard entry:\ndisplayname: {displayname}\nusername: {username}\nlevel: {level}\npoints: {user_points}\npercentage: {percentage}\ntonextlevel: {tonextlevel}")
+            #print(f"leaderboard entry:\ndisplayname: {displayname}\nusername: {username}\nlevel: {level}\npoints: {user_points}\npercentage: {percentage}\ntonextlevel: {tonextlevel}")
             leaderboard.append(entry)               # add the tuple to the leaderboard
             
         startindex = (page - 1) * 10
