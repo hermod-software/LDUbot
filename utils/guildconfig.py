@@ -3,7 +3,7 @@ import os
 import yaml
 import copy
 
-from components.shared import client
+from utils.shared import client
 
 class GuildConfig:
     """
@@ -18,13 +18,15 @@ class GuildConfig:
     setreward(level, role): set a role to be given at a certain level
     delreward(level): remove a role from the rewards list
     """
-    guilds = {}
+    # guilds = {}
     DEFAULTCONFIG = {
         "base": 50,                 # base points needed to reach level 1
         "growth_rate": 1.2,         # growth rate of points needed to reach next level (1.2 means 20% more points needed)
         "point_range_upper": 5,     # maximum points that can be earned in a single message (randomised)
-        "point_range_lower": 1,     # minimum points that can be earned in a single message
-        "roles": {}                 # list of role rewards as a dict (level: roleid)
+        "point_range_lower": 1,     # minimum points that can be earned in a single message (randomised)
+        "roles": {                  # role awards to be given at certain levels
+            # level: roleid
+        }                 
     }
     VALIDKEYS = DEFAULTCONFIG.keys()    # list of valid keys for the config
 
