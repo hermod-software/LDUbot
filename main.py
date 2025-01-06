@@ -5,12 +5,15 @@ import hashlib
 import yaml
 import os
 
-from components.shared import client, tree
-from components.blacklist import readblacklist, blacklistuser, unblacklistuser, isblacklisted, testblacklist
+from utils.shared import client, tree # using discord.Bot, not discord.Client, holdover from old code
+from utils.guildmember import GuildMember
+from utils.guildconfig import GuildConfig
 
 
 
-blacklist = []      # this list will store the hashed usernames of users who have opted out of logging
+
+client.guildmembers = {}
+client.guildconfigs = {}
 
 async def synctrees():
     print(f"Syncing commands list...", end="")
@@ -25,17 +28,14 @@ async def on_ready():
     for guild in client.guilds:
         print(f" - {guild.name}")
         
-    await client.load_extension("components.levels")
-    await client.load_extension("components.mapchart")
+    await client.load_extension("cogs.levels")
+    await client.load_extension("cogs.mapchart")
 
     await synctrees()
     print("Commands loaded:")
     for command in tree.get_commands():
         print(f" - {command.name}")
 
-    blacklist = readblacklist() # load the blacklist from the file
-    testblacklist(blacklist) # run the test function to make sure the blacklist functions work (it'll crash if they don't)
-    print(f"Loaded & tested blacklist")
 
  
 @client.event
@@ -85,58 +85,9 @@ async def add_role_to_members(interaction: discord.Interaction, target: discord.
             errors.append(error)
             interaction.followup.send(error)
     username = interaction.user.name
-    if isblacklisted(username):
-        username = "(redacted username)"
     stamp = f"user {username} added role \"{add.name}\" to {added_count}/{len(member)} members of role \"{target.name}\""
     print(stamp)
     await message.edit(stamp)
-
-@tree.command(name="privacy", description="prevent debug logs from containing your username")
-async def privacy(interaction: discord.Interaction, option: bool):
-    global blacklist
-    blacklist = readblacklist()
-    print(f"privacy command invoked by {interaction.user.name}: {option}")
-    if option == True:
-        if not isblacklisted(interaction.user.name, blacklist):
-            blacklist = blacklistuser(interaction.user.name, blacklist)
-            await interaction.response.send_message(f"blacklisted user {interaction.user.name}. you can unblacklist yourself by doing /privacy False\n(see https://loritsi.neocities.org/privacy.txt)", ephemeral=True)
-        else:
-            await interaction.response.send_message(f"user {interaction.user.name} is already blacklisted", ephemeral=True)
-        return
-    if option == False:
-        if isblacklisted(interaction.user.name, blacklist):
-            blacklist = unblacklistuser(interaction.user.name, blacklist)
-            await interaction.response.send_message(f"unblacklisted user {interaction.user.name}. you can blacklist yourself again by doing /privacy True\n (see https://loritsi.neocities.org/privacy.txt)", ephemeral=True)
-        else:
-            await interaction.response.send_message(f"user {interaction.user.name} is not blacklisted", ephemeral=True)
-        return
-
-
-import os
-
-@tree.command(name="send_dev_message", description="send a message or suggestion to the developer (anonymous)")
-async def send_dev_message(interaction: discord.Interaction, message: str):
-    global blacklist
-    if isblacklisted(interaction.user.name, blacklist):
-        await interaction.response.send_message(f"while i really appreciate your feedback, your privacy settings don't allow me to save your message:\n`{message}`\nyou can do /privacy False to change your privacy settings.", ephemeral=True)
-        message = None
-        return
-    try:
-        if not os.path.exists("devmessages.txt"):   # check if the file exists, and create it if not
-            with open("devmessages.txt", "w") as file:
-                file.write("messages for loritsi:\n")
-
-        with open("devmessages.txt", "a") as file:  # append the message to the file
-            file.write(f"\t- {message}\n")
-
-        stamp = f"message received and will be saved anonymously: \n`{message}`\nthanks for your feedback :)"    
-        print(f"new message: {message}")                                     
-        await interaction.response.send_message(stamp, ephemeral=True) # send confirmation message
-    except Exception as e: # if something goes wrong send an error message
-        await interaction.response.send_message(f"sorry, something went wrong: {e} (send this to loritsi on discord)", ephemeral=True)
-
-
-
 
 with open("bot_token.txt", "r") as file:
     bot_token = file.read().strip()
