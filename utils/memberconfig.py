@@ -1,13 +1,17 @@
 import discord
 
 from utils.guildconfig import GuildConfig
+from utils.shared import client
 
 class GuildMember:
     # guilds = {
     #     # guildid: {userid: GuildMember}
     # }
 
-    def __init__(self, member: discord.Member):
+    def __init__(self, memberid: int):
+
+        member = client.get_user(memberid)
+
         self.displayname = member.display_name  # nickname if set, displayname otherwise, username if neither
         self.username = member.name             # username
         self.userid = member.id                 # user id

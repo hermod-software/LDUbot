@@ -6,8 +6,14 @@ import timeit
 
 # i hate PIL but its simple and i dont need to do anything fancy
 
-LEADERBOARDPATH = "./savedata/leaderboards/"
-USERPATH = "./savedata/users/"
+LEADERBOARDPATH = "./cache/leaderboards/"
+USERPATH = "./cache/users/"
+
+if not os.path.exists(LEADERBOARDPATH):
+    os.makedirs(LEADERBOARDPATH)
+
+if not os.path.exists(USERPATH):
+    os.makedirs(USERPATH)
 
 BLUE = (92, 91, 142)
 GREEN = (100, 169, 100)
@@ -22,11 +28,6 @@ CIRCLE_BLACK = (29, 27, 29)
 TEXT_WHITE = (255, 255, 255)
 TEXT_GRURPLE = RURPLE
 
-if not os.path.exists(LEADERBOARDPATH):
-    os.makedirs(LEADERBOARDPATH)
-
-if not os.path.exists(USERPATH):
-    os.makedirs(USERPATH)
 
 try: # be mindful of the file type if you are changing the font (ttf, otf, et
     BIGNUMBER = ImageFont.truetype("./assets/typeface.otf", 60)  # monaspace neon extrabold

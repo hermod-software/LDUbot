@@ -36,16 +36,14 @@ class GuildConfig:
             print(f"i have no access to guild {guildid}, skipping config object creation")
             return                                              # (the function will end here if the guild doesn't exist)
 
-        self.guildid = guild.id
-        self.guildname = guild.name
+        self.guildid = guild.id         # numerical guild id
+        self.guildname = guild.name     # name of the guild
 
         self.config = self.load()                                   # load the config from file
         if self.config is None:                                     # if the config doesn't exist, create a new default config
             self.config = copy.deepcopy(GuildConfig.DEFAULTCONFIG)  # copy the default config into the new config
             self.save()                                             # save the new config to file 
             self.config = self.load()                               # load the new config again for good measure
-
-        GuildConfig.guilds[self.guildid] = self
     
     def save(self):
         """

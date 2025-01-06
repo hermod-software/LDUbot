@@ -1,6 +1,8 @@
 import discord
 from discord.ext import commands
 
+# configuration slash commands
+
 @discord.app_commands.default_permissions(manage_roles=True)
 class GuildConfig(commands.GroupCog, group_name="config"):
     def __init__(self, client: commands.Bot):

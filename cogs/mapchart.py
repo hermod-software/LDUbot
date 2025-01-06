@@ -195,9 +195,9 @@ class Mapchart(commands.Cog):
 
     @commands.Cog.listener()
     async def on_ready(self):
-        if os.path.exists("savedata/mapchart.yml"):
-            with open("savedata/mapchart.yml", "r") as f:
-                self.config = yaml.safe_load(f)
+        # if os.path.exists("savedata/mapchart.yml"):       # i can't remember what this was for
+        #     with open("savedata/mapchart.yml", "r") as f:
+        #         self.config = yaml.safe_load(f)
         print("Mapchart cog loaded")
 
 

@@ -6,7 +6,7 @@ import yaml
 import os
 
 from utils.shared import client, tree # using discord.Bot, not discord.Client, holdover from old code
-from utils.guildmember import GuildMember
+from utils.memberconfig import GuildMember
 from utils.guildconfig import GuildConfig
 
 
