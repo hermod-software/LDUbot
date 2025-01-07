@@ -393,6 +393,7 @@ class Levels(commands.Cog):
 
     @commands.Cog.listener()
     async def on_message(self, message):
+        print(f"message received in {message.guild.name} from {message.author.name}")
         if message.author.bot:
             return
         guildconfig = ConfigHandler.guilds[message.guild.id]
@@ -429,7 +430,7 @@ class Levels(commands.Cog):
 
             newuserlevel = self.get_level_from_points(userpoints, guild_id)[0]
 
-            await self.rolelevelpass(message.guild, message.author, newuserlevel) # check if the user has reached a new level and award the role if they have
+        await self.rolelevelpass(message.guild, message.author, newuserlevel) # check if the user has reached a new level and award the role if they have
             #print(stamp)
         
 
