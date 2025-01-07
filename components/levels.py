@@ -418,9 +418,7 @@ class Levels(commands.Cog):
             #print(stamp)
             return
         else:
-            self.add_recent_sender(guild_id, author_id)
-
-            stamp = f"{guild_name}: awarding {message.author.name} {award} points"
+            self.add_recent_sender(guild_id, author_id)                             # add the user to the recent sender list
 
             userpoints = self.points.get(guild_id, {}).get(author_id, 0)
 
@@ -430,9 +428,7 @@ class Levels(commands.Cog):
 
             newuserlevel = self.get_level_from_points(userpoints, guild_id)[0]
 
-            if userlevel != newuserlevel: # if the user levelled up
-                self.rolelevelpass(message.guild, message.author, newuserlevel)
-                stamp += f"user {message.author.name} levelled up to level {newuserlevel}"
+            self.rolelevelpass(message.guild, message.author, newuserlevel) # check if the user has reached a new level and award the role if they have
             #print(stamp)
         
 
