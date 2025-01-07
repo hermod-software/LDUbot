@@ -349,6 +349,7 @@ class Levels(commands.Cog):
         self.save_points()
 
     async def rolelevelpass(self, guild: discord.Guild, member: discord.Member, level):
+        print(f"rolelevelpass called for {member.name} in {guild.name}")
         async def giverole(member, role, guild):
             if role in member.roles: # don't give the role if the user already has it
                 return
@@ -377,7 +378,7 @@ class Levels(commands.Cog):
                 else:
                     print(f"role for level {level} not found in {guildname}")
             else:
-                print(f"no role set for level {level} in {guildname}")
+                pass
             
             
                 
@@ -428,7 +429,7 @@ class Levels(commands.Cog):
 
             newuserlevel = self.get_level_from_points(userpoints, guild_id)[0]
 
-            self.rolelevelpass(message.guild, message.author, newuserlevel) # check if the user has reached a new level and award the role if they have
+            await self.rolelevelpass(message.guild, message.author, newuserlevel) # check if the user has reached a new level and award the role if they have
             #print(stamp)
         
 
