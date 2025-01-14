@@ -1,6 +1,8 @@
 import discord
 from discord.ext import commands
 
+from utils.shared import GUILDCONFIGS
+
 # configuration slash commands
 
 @discord.app_commands.default_permissions(manage_roles=True)
@@ -8,34 +10,37 @@ class GuildConfig(commands.GroupCog, group_name="config"):
     def __init__(self, client: commands.Bot):
         self.client = client
 
-        for guild in self.client.guilds:
-            if guild.id not in ConfigHandler.guilds:
-                ConfigHandler(guild)
+        for guild in client.guilds:
+            if guild.id not in GUILDCONFIGS.keys():
+                GuildConfig(guild.id)
 
     @commands.Cog.listener()
     async def on_guild_join(self, guild):
-        if guild.id not in ConfigHandler.guilds:
-            ConfigHandler(guild)
-        print(f"Joined guild: {guild.name} (ID: {guild.id})")
+        if guild.id not in GUILDCONFIGS.keys():
+            GuildConfig(guild.id)
+            print(f"Joined guild: {guild.name} (ID: {guild.id})")
+        else:
+            print(f"Joined guild: {guild.name} (ID: {guild.id}) (config already exists)")
 
     @commands.Cog.listener()
     async def on_guild_remove(self, guild):
-        if guild.id in ConfigHandler.guilds:
-            del ConfigHandler.guilds[guild.id]
+
         print(f"Left guild: {guild.name} (ID: {guild.id})")
 
     @discord.app_commands.command(
         name="set_base", 
-        description=f"set the amount of points to get from level 0 to level 1 (default: {ConfigHandler.defaultconfig['base']})"
+        description=f"set the amount of points to get from level 0 to level 1"
     )
     @commands.has_permissions(manage_guild=True)
     async def set_base(self, interaction: discord.Interaction, base: int):
-        guild_config = ConfigHandler.guilds.get(interaction.guild.id)
-        if not guild_config:
+        guildid = interaction.guild.id
+        guildobject = GUILDCONFIGS.get(guildid)
+        if not guildobject:
             await interaction.response.send_message("configuration not found for this guild.")
             return
-        guild_config.setconfig("base", base)
-        await interaction.response.send_message(f"set base points amount to {base}")
+        else:
+            guildobject.modify("base", base)
+            await interaction.response.send_message(f"set base points amount to {base}")
 
     @discord.app_commands.command(name="get_base", description="get the amount of points to get from level 0 to level 1")
     async def get_base(self, interaction: discord.Interaction):

@@ -6,14 +6,8 @@ import yaml
 import os
 
 from utils.shared import client, tree # using discord.Bot, not discord.Client, holdover from old code
-from utils.memberconfig import GuildMember
 from utils.guildconfig import GuildConfig
 
-
-
-
-client.guildmembers = {}
-client.guildconfigs = {}
 
 async def synctrees():
     print(f"Syncing commands list...", end="")
@@ -30,6 +24,7 @@ async def on_ready():
         
     await client.load_extension("cogs.levels")
     await client.load_extension("cogs.mapchart")
+    await client.load_extension("cogs.config")
 
     await synctrees()
     print("Commands loaded:")
