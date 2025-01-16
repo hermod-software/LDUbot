@@ -28,9 +28,15 @@ class RoleUtil(commands.Cog):
 
         await interaction.response.defer() # we might not be able to send the message right away
 
+        for i, member in enumerate(members):
+            fetched = await guild.fetch_member(member.id)
+            members[i] = fetched
+
+
+
         output = [[]]
         for member in members:
-            mention = f"<@{member.id}>"
+            mention = member.mention
             output[-1].append(mention)
             if len(', '.join(output[-1])) > 1900:
                 output.append([])
