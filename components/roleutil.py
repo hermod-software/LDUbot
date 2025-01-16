@@ -8,7 +8,25 @@ class RoleUtil(commands.Cog):
 
     @app_commands.command(name="roster", description="list all members with a given role")
     async def roster(self, interaction: discord.Interaction, role: discord.Role):
+        allowedmentions = discord.AllowedMentions.none()    # no pings allowed
+        guild = interaction.guild                           # get the guild
+        await guild.fetch_members()                         # update member cache
+
         members = role.members
+
+        if members is None:
+            await interaction.response.send_message(f"error fetching members of role {role.mention}", allowed_mentions=allowedmentions)
+            return
+        elif len(members) == 0:
+            await interaction.response.send_message(f"there are no members of role {role.mention}", allowed_mentions=allowedmentions)
+            return
+        elif len(members) > 150:
+            permissions = interaction.channel.permissions_for(interaction.user)
+            if not permissions.manage_roles:
+                await interaction.response.send_message(f"there are {len(members)} members of {role.mention}, but only users with the manage_roles permission can list roles with more than 150 members")
+                return
+
+        await interaction.response.defer() # we might not be able to send the message right away
 
         output = [[]]
         for member in members:
@@ -16,10 +34,6 @@ class RoleUtil(commands.Cog):
             output[-1].append(mention)
             if len(', '.join(output[-1])) > 1900:
                 output.append([])
-
-        await interaction.response.defer()
-
-        allowedmentions = discord.AllowedMentions.none()
 
         stamp = f"there are {len(members)} members of {role.mention}:"
         for message in output:
@@ -29,8 +43,6 @@ class RoleUtil(commands.Cog):
                 allowed_mentions=allowedmentions
             )
             stamp = ""
-
-        
 
     @app_commands.command(name="bulk_assign", description="add role X to all members of role Y")
     @app_commands.default_permissions(manage_roles=True)
