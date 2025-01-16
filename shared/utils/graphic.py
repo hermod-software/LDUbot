@@ -127,7 +127,7 @@ def user_unit(displayname, username, level, percent, tonextlevel, index, right=2
         CIRCLESIZE = 55
         halfCIRCLESIZE = ceil(CIRCLESIZE/2)
 
-        unitwidth = 300
+        unitwidth = 295
 
         trunc = False
 
