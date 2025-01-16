@@ -1,4 +1,5 @@
 import discord
+import asyncio
 from discord.ext import commands
 from discord import app_commands
 
@@ -10,7 +11,6 @@ class RoleUtil(commands.Cog):
     async def roster(self, interaction: discord.Interaction, role: discord.Role):
         allowedmentions = discord.AllowedMentions.none()    # no pings allowed
         guild = interaction.guild                           # get the guild
-        await guild.fetch_members()                         # update member cache
 
         members = role.members
 
@@ -26,18 +26,14 @@ class RoleUtil(commands.Cog):
                 await interaction.response.send_message(f"there are {len(members)} members of {role.mention}, but only users with the manage_roles permission can list roles with more than 150 members")
                 return
 
-        await interaction.response.defer() # we might not be able to send the message right away
+        await interaction.response.defer() 
 
         for i, member in enumerate(members):
-            fetched = await guild.fetch_member(member.id)
-            members[i] = fetched
-
-
+            members[i] = member.name
 
         output = [[]]
         for member in members:
-            mention = member.mention
-            output[-1].append(mention)
+            output[-1].append(member)
             if len(', '.join(output[-1])) > 1900:
                 output.append([])
 
