@@ -41,7 +41,7 @@ class RoleUtil(commands.Cog):
         for message in output:
             joined_message = ', '.join(message)
             await interaction.followup.send(
-                f"{stamp}\n{joined_message}",
+                f"{stamp}\n```\n{joined_message}\n```",
                 allowed_mentions=allowedmentions
             )
             stamp = ""
