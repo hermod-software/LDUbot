@@ -8,3 +8,4 @@ bot_token.txt
 /utils/__pycache__
 /graphic/__pycache__
 /cogs/__pycache__
+*.pyc

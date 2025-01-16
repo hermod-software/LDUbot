@@ -2,7 +2,7 @@ import discord
 import hashlib
 import os
 
-from components.shared import client, tree
+from shared.defs.shared import client, tree
 
 blacklistpath = "savedata/blacklist.txt"
 logpath = "savedata/log.txt"

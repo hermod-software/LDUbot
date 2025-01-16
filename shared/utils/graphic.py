@@ -28,7 +28,7 @@ if not os.path.exists(LEADERBOARDPATH):
 if not os.path.exists(USERPATH):
     os.makedirs(USERPATH)
 
-try: # be mindful of the file type if you are changing the font (ttf, otf, et
+try: # be mindful of the file type if you are changing the font (ttf, otf, etc). this script is designed for monospace fonts!
     BIGNUMBER = ImageFont.truetype("./assets/typeface.otf", 60)  # monaspace neon extrabold
     MEDNUMBER = ImageFont.truetype("./assets/typeface.otf", 50)   # monaspace neon extrabold
     TITLE = ImageFont.truetype("./assets/typeface.otf", 40)     # monaspace neon extrabold
@@ -39,6 +39,17 @@ try: # be mindful of the file type if you are changing the font (ttf, otf, et
 except IOError:
     print("!! graphics.py could not find typeface.ttf, using default font !!")
     font = ImageFont.load_default()
+
+def getcharwidth(font: ImageFont):
+    draw = ImageDraw.Draw(Image.new("RGB", (100,100)))
+    return draw.textbbox((0,0), "O", font=font)[2] # get the width of single character (monospace)
+
+def trunctext(text: str, font: ImageFont, maxwidth: int):
+    charwidth = getcharwidth(font)
+    maxchars = maxwidth // charwidth
+    if len(text) > maxchars:
+        text = text[:maxchars-3] + "..."
+    return text
 
 def timefunction(func):
     def timed(*args, **kwargs):
@@ -116,38 +127,23 @@ def user_unit(displayname, username, level, percent, tonextlevel, index, right=2
         CIRCLESIZE = 55
         halfCIRCLESIZE = ceil(CIRCLESIZE/2)
 
+        unitwidth = 300
+
         trunc = False
 
-        unit = Image.new("RGBA", (400,100))
+        unit = Image.new("RGBA", (unitwidth,100))
         draw = ImageDraw.Draw(unit)
 
         top = f"{displayname}"
-        displaybounds = Bounds(draw.textbbox((10,10), f"T{top}", font=BODY)) # T ensures the text is max height when calculating bounds
-
-
-        while displaybounds.right > 295:    # check if the text is too long
-            trunc = True
-            top = top[:-1]                  # remove the last character
-            displaybounds = Bounds(draw.textbbox((10,10), f"T{top}", font=BODY)) # recalculate bounds
-        if trunc == True:
-            top = top[:-3] + "..."              # add ellipsis if the name is too long
-            trunc = False # reset truncation state
-
+        maxwidth = unitwidth - (CIRCLESIZE + 20)  # Adjust maxwidth to account for padding and circle size
+        top = trunctext(top, BODY, maxwidth)
         draw.text((CIRCLESIZE + 10, 10), top, font=BODY, fill=TEXT_WHITE)
+        displaybounds = Bounds(draw.textbbox((CIRCLESIZE + 10, 10), top, font=BODY))
 
         bottom = f"{tonextlevel} to next level"
-
-        userbounds = Bounds(draw.textbbox((10,35), f"T{bottom}", font=TINY_LIGHT))  # T ensures the text is max height when calculating bounds
-
-        while userbounds.right > 295:       # check if the text is too long
-            trunc = True
-            bottom = bottom[:-1]            # remove the last character
-            userbounds = Bounds(draw.textbbox((10,35), f"T{bottom}", font=TINY_LIGHT)) # recalculate bounds
-        if trunc == True:
-            bottom = bottom[:-3] + "..."
-            trunc = False # reset truncation state
-
+        bottom = trunctext(bottom, TINY_LIGHT, unitwidth-10)
         draw.text((CIRCLESIZE + 10, 35), bottom, font=TINY_LIGHT, fill=TEXT_WHITE)
+        userbounds = Bounds(draw.textbbox((10,35), f"T{bottom[:-1]}", font=TINY_LIGHT))  # T ensures the text is max height when calculating bounds
 
         collective_middle = middle(displaybounds.bottom, userbounds.top)
 

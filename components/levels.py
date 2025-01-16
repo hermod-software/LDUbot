@@ -8,7 +8,7 @@ import os
 import copy
 import unicodedata
 
-import components.graphic as graphic
+import shared.utils.graphic as graphic
 
 class ConfigHandler:
     guilds = {}

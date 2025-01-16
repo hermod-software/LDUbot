@@ -5,7 +5,7 @@ import hashlib
 import yaml
 import os
 
-from components.shared import client, tree
+from shared.defs.shared import client, tree
 from components.blacklist import readblacklist, blacklistuser, unblacklistuser, isblacklisted, testblacklist
 
 
