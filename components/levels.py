@@ -466,7 +466,7 @@ class Levels(commands.Cog):
         level, tonextlevel = self.get_level_from_points(points, guild_id)
         pointsthislevel = points - self.get_points_from_level(level, guild_id)
         percent = (pointsthislevel / (pointsthislevel + tonextlevel)) * 100
-        index = await self.get_leaderboard_position(guild_id, user_id)
+        index = await self.get_leaderboard_position(interaction.guild, user_id)
         
         entry = [displayname, user.name, level, points, percent, tonextlevel, index]
 
