@@ -451,7 +451,8 @@ class Levels(commands.Cog):
             return False
 
     async def get_leaderboard_position(self, guild, user_id):
-        await guild.fetch_members()
+        if not guild.chunked:
+            await guild.chunk()
         guild_id = str(guild.id)
         user_id = str(user_id)
         guild_points = self.points.get(guild_id, None)
