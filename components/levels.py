@@ -446,7 +446,7 @@ class Levels(commands.Cog):
             if user is None:
                 raise ValueError
             return True # only reached if the user is found and not None
-        except discord.NotFound:
+        except ValueError:
             print(f"user {user_id} not found")
             return False
 
