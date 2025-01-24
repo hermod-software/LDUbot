@@ -434,18 +434,11 @@ class Levels(commands.Cog):
             #print(stamp)
         
 
-    def get_leaderboard_position(self, guild_id, user_id, guild):
+    def get_leaderboard_position(self, guild_id, user_id):
         points = self.points.get(guild_id, {})
         sortedpoints = sorted(points.items(), key=lambda x: x[1], reverse=True)
-        
-        validpoints = []
-        for uid, score in sortedpoints:
-            user = guild.get_member(int(uid))
-            if user is not None:
-                validpoints.append((uid, score))
-
-        for i, (uid, _) in enumerate(validpoints):
-            if int(uid) == user_id:
+        for i, (id, _) in enumerate(sortedpoints):
+            if id == user_id:
                 return i
         return None
 
@@ -469,7 +462,7 @@ class Levels(commands.Cog):
         level, tonextlevel = self.get_level_from_points(points, guild_id)
         pointsthislevel = points - self.get_points_from_level(level, guild_id)
         percent = (pointsthislevel / (pointsthislevel + tonextlevel)) * 100
-        index = self.get_leaderboard_position(guild_id, user_id, interaction.guild)
+        index = self.get_leaderboard_position(guild_id, user_id)
         
         entry = [displayname, user.name, level, points, percent, tonextlevel, index]
 
