@@ -434,7 +434,7 @@ class Levels(commands.Cog):
         await self.rolelevelpass(message.guild, message.author, newuserlevel) # check if the user has reached a new level and award the role if they have
             #print(stamp)
         
-    async def user_in_guild(guild, user_id):
+    async def user_in_guild(self, guild, user_id):
         if type(user_id) is not int:
             try:
                 user_id = int(user_id)
