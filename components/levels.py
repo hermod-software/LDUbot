@@ -9,6 +9,7 @@ import copy
 import unicodedata
 
 import shared.utils.graphic as graphic
+from shared.defs.shared import client
 
 class ConfigHandler:
     guilds = {}
@@ -434,12 +435,15 @@ class Levels(commands.Cog):
             #print(stamp)
         
 
-    def get_leaderboard_position(self, guild_id, user_id):
+    async def get_leaderboard_position(self, guild, user_id):
+        guild_id = guild.id # get the guild ID
         points = self.points.get(guild_id, {})
         sortedpoints = sorted(points.items(), key=lambda x: x[1], reverse=True)
         for i, (id, _) in enumerate(sortedpoints):
             if id == user_id:
-                return i
+                user = await guild.fetch_member(int(id)).display_name
+                if user is not None:
+                    return i
         return None
 
     @discord.app_commands.command(name="rank", description="fetch the level of a user")
