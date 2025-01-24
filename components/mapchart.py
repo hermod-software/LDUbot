@@ -36,7 +36,7 @@ async def fetch_image(config, mapname, user="no_user"):
     options.set_preference("browser.download.dir", download_dir)
     options.set_preference("browser.helperApps.neverAsk.saveToDisk", "image/png")
     options.set_preference("browser.download.useDownloadDir", True)
-    options.add_argument("--headless")
+    #options.add_argument("--headless")
 
 
     driver = webdriver.Firefox(
@@ -92,6 +92,7 @@ async def fetch_image(config, mapname, user="no_user"):
 
         print("opening legend options...")
         legend_options = driver.find_element(By.ID, 'advanced-legend-btn')
+        driver.execute_script("arguments[0].scrollIntoView({behavior: 'auto', block: 'center'});", legend_options) # make sure the element is in view
         attempts = 0
         while True:
             if attempts > 60:
@@ -211,38 +212,58 @@ class Mapchart(commands.Cog):
                 self.config = yaml.safe_load(f)
         print("Mapchart cog loaded")
 
-
+    async def cog_load(self):
+        self.client.tree.add_command(mapchart_context)
+        
 
     @discord.app_commands.command(name="mapchart_from_file", description="get a mapchart image from a txt attachment")
     async def mapchart(self, interaction: discord.Interaction, mapchart_txt: discord.Attachment):
         file = mapchart_txt
         mapchart_url, error = await getmaptype(file)
         if error:
-            await interaction.response.send_message(error)
+            await interaction.response.send_message(error, ephemeral=True)
             return
         await process_mapchart(interaction, file, mapchart_url)
 
-    @discord.app_commands.command(name="mapchart_from_id", description="get a mapchart image from message ID")
-    async def mapchart_url(self, interaction: discord.Interaction, id: str):
-        message = await interaction.channel.fetch_message(id)
-        if not message.attachments:
-            await interaction.response.send_message("the message must have an attachment")
-            return
+    # @discord.app_commands.command(name="mapchart_from_id", description="get a mapchart image from message ID")
+    # async def mapchart_url(self, interaction: discord.Interaction, id: str):
+    #     message = await interaction.channel.fetch_message(id)
+    #     if not message.attachments:
+    #         await interaction.response.send_message("the message must have an attachment")
+    #         return
         
-        attachments = message.attachments
+    #     attachments = message.attachments
 
-        for attachment in attachments:
-            if attachment.filename.endswith(".txt"):
-                file = attachment
-                break
+    #     for attachment in attachments:
+    #         if attachment.filename.endswith(".txt"):
+    #             file = attachment
+    #             break
 
-        mapchart_url, error = await getmaptype(file)
-        if error:
-            await interaction.response.send_message(error)
-            return
-        await process_mapchart(interaction, file, mapchart_url)
+    #     mapchart_url, error = await getmaptype(file)
+    #     if error:
+    #         await interaction.response.send_message(error)
+    #         return
+    #     await process_mapchart(interaction, file, mapchart_url)
 
-
+@discord.app_commands.context_menu(name="Render Mapchart Image")
+async def mapchart_context(interaction: discord.Interaction, message: discord.Message):
+    if not message.attachments:
+        await interaction.response.send_message("the message doesn't have a mapchart txt file attached", ephemeral=True)
+        return
+    attachments = message.attachments
+    file = None
+    for attachment in attachments:
+        if attachment.filename.endswith(".txt"):
+            file = attachment
+            break
+    if file is None:
+        await interaction.response.send_message("the message doesn't have a mapchart txt file attached", ephemeral=True)
+        return
+    mapchart_url, error = await getmaptype(file)
+    if error:
+        await interaction.response.send_message(error, ephemeral=True)
+        return
+    await process_mapchart(interaction, file, mapchart_url)
 
 async def setup(client):
     await client.add_cog(Mapchart(client))
