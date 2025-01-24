@@ -434,7 +434,7 @@ class Levels(commands.Cog):
         await self.rolelevelpass(message.guild, message.author, newuserlevel) # check if the user has reached a new level and award the role if they have
             #print(stamp)
         
-    async def user_in_guild(self, guild, user_id):
+    def user_in_guild(self, guild, user_id):
         if type(user_id) is not int:
             try:
                 user_id = int(user_id)
@@ -442,7 +442,7 @@ class Levels(commands.Cog):
                 print(f"Error converting user_id {user_id} to int")
                 return False
         try:
-            user = await guild.fetch_member(user_id)
+            user = guild.get_member(user_id)
             if user is None:
                 raise discord.NotFound
             return True # only reached if the user is found and not None
@@ -451,6 +451,7 @@ class Levels(commands.Cog):
             return False
 
     async def get_leaderboard_position(self, guild, user_id):
+        await guild.fetch_members()
         guild_id = str(guild.id)
         user_id = str(user_id)
         guild_points = self.points.get(guild_id, None)
@@ -461,10 +462,16 @@ class Levels(commands.Cog):
         if not user_id in guild_points:
             return None # user has no points in the guild
         
-        sorted_points = sorted(guild_points, key=lambda k: guild_points[k], reverse=True) # sort the users by points within the guild
-        user_index = sorted_points.index(user_id) # get the index of the user in the sorted list
-        return user_index # return the index
+        validate_points = {}
+        for userid, points in guild_points.items():
+            if self.user_in_guild(guild, userid):   # only count users that are still in the guild
+                validate_points[userid] = points    # users who have left are not on the leaderboard anyway
         
+        guild_points = validate_points
+
+        sorted_points = sorted(guild_points, key=lambda k: guild_points[k], reverse=True) # sort the users by points within the guild
+        user_index = sorted_points.index(user_id) # get the index of the user in the sorted list (their position on the leaderboard)
+        return user_index
 
     @discord.app_commands.command(name="rank", description="fetch the level of a user")
     async def rank(self, interaction: discord.Interaction, user: discord.Member=None):
