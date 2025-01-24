@@ -458,7 +458,7 @@ class Levels(commands.Cog):
         guild_points = self.points.get(guild_id, None)
         if guild_points is None:
             return None # no points for the guild
-        if not await self.user_in_guild(guild, user_id):
+        if not self.user_in_guild(guild, user_id):
             return None # user not in the guild
         if not user_id in guild_points:
             return None # user has no points in the guild
