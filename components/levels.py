@@ -434,17 +434,37 @@ class Levels(commands.Cog):
         await self.rolelevelpass(message.guild, message.author, newuserlevel) # check if the user has reached a new level and award the role if they have
             #print(stamp)
         
+    async def user_in_guild(guild, user_id):
+        if type(user_id) is not int:
+            try:
+                user_id = int(user_id)
+            except ValueError:
+                print(f"Error converting user_id {user_id} to int")
+                return False
+        try:
+            user = await guild.fetch_member(user_id)
+            if user is None:
+                raise discord.NotFound
+            return True # only reached if the user is found and not None
+        except discord.NotFound:
+            print(f"user {user_id} not found")
+            return False
 
     async def get_leaderboard_position(self, guild, user_id):
-        guild_id = guild.id # get the guild ID
-        points = self.points.get(guild_id, {})
-        sortedpoints = sorted(points.items(), key=lambda x: x[1], reverse=True)
-        for i, (id, _) in enumerate(sortedpoints):
-            if id == user_id:
-                user = await guild.fetch_member(int(id)).display_name
-                if user is not None:
-                    return i
-        return None
+        guild_id = str(guild.id)
+        user_id = str(user_id)
+        guild_points = self.points.get(guild_id, None)
+        if guild_points is None:
+            return None # no points for the guild
+        if not await self.user_in_guild(guild, user_id):
+            return None # user not in the guild
+        if not user_id in guild_points:
+            return None # user has no points in the guild
+        
+        sorted_points = sorted(guild_points, key=lambda k: guild_points[k], reverse=True) # sort the users by points within the guild
+        user_index = sorted_points.index(user_id) # get the index of the user in the sorted list
+        return user_index # return the index
+        
 
     @discord.app_commands.command(name="rank", description="fetch the level of a user")
     async def rank(self, interaction: discord.Interaction, user: discord.Member=None):
