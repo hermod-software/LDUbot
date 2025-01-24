@@ -11,6 +11,7 @@ import os
 import yaml
 import discord
 from discord.ext import commands, tasks
+import json
 
 download_dir = "./downloads/image"
 download_dir = os.path.abspath(download_dir)
@@ -183,11 +184,21 @@ async def process_mapchart(interaction: discord.Interaction, file: discord.Attac
             file=discord.File(filename)
         )
     except FileNotFoundError:
-        await interaction.followup.send("the file was downloaded, but it couldn't be found. please try again (or report this as a bug on the github page)")
+        await interaction.followup.send("the image was downloaded, but it couldn't be found. please try again (or report this as a bug on the github page)")
 
     if os.path.exists(filename):
         os.remove(filename) # delete the file after sending it (we don't need it anymore)
 
+async def getmaptype(file):
+    data = await file.read() # read the file as bytes
+    try:
+        data = json.loads(data) # try to parse it as json
+        try:
+            return data["page"], None
+        except KeyError:
+            return None, "this map is too old and has no page key. to fix this, open the config yourself in https://mapchart.net and save it again"
+    except json.JSONDecodeError:
+        return None, "this is not a valid configuration file (maybe corrupted)"
 
 class Mapchart(commands.Cog):
     def __init__(self, client: commands.Bot):
@@ -203,12 +214,16 @@ class Mapchart(commands.Cog):
 
 
     @discord.app_commands.command(name="mapchart_from_file", description="get a mapchart image from a txt attachment")
-    async def mapchart(self, interaction: discord.Interaction, mapchart_txt: discord.Attachment, mapchart_url: str):
+    async def mapchart(self, interaction: discord.Interaction, mapchart_txt: discord.Attachment):
         file = mapchart_txt
+        mapchart_url, error = await getmaptype(file)
+        if error:
+            await interaction.response.send_message(error)
+            return
         await process_mapchart(interaction, file, mapchart_url)
 
     @discord.app_commands.command(name="mapchart_from_id", description="get a mapchart image from message ID")
-    async def mapchart_url(self, interaction: discord.Interaction, id: str, mapchart_url: str):
+    async def mapchart_url(self, interaction: discord.Interaction, id: str):
         message = await interaction.channel.fetch_message(id)
         if not message.attachments:
             await interaction.response.send_message("the message must have an attachment")
@@ -221,6 +236,10 @@ class Mapchart(commands.Cog):
                 file = attachment
                 break
 
+        mapchart_url, error = await getmaptype(file)
+        if error:
+            await interaction.response.send_message(error)
+            return
         await process_mapchart(interaction, file, mapchart_url)
 
 
