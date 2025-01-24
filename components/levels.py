@@ -510,6 +510,7 @@ class Levels(commands.Cog):
             if username is None:                            # if there is no user for some reason
                 username = "(no user)"                      # set the username to an error message
                 displayname = username    
+                continue # don't add the user to the leaderboard
             if not isinstance(username, str):       # if the user is not a string (i.e. it's a user object and not an error message or something)
                 displayname = username.display_name # get the user's display name
                 username = username.name            # get the user's username
