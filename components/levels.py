@@ -444,7 +444,7 @@ class Levels(commands.Cog):
         try:
             user = guild.get_member(user_id)
             if user is None:
-                raise discord.NotFound
+                raise ValueError
             return True # only reached if the user is found and not None
         except discord.NotFound:
             print(f"user {user_id} not found")
