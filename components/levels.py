@@ -390,11 +390,6 @@ class Levels(commands.Cog):
             member = guild.get_member(int(user))
             if member is not None:
                 await self.rolelevelpass(guild, member, level, notify=False)
-                # we don't want to spam the users with DMs, so we don't notify them
-
-    
-
-                
 
     @tasks.loop(seconds=30)  # save every 30 seconds
     async def save_task(self):
@@ -538,8 +533,10 @@ class Levels(commands.Cog):
     @discord.app_commands.command(name="mass_role_check", description="check all users in the server and award roles if they have reached a new level")
     @discord.app_commands.default_permissions(manage_roles=True)
     async def mass_role_check(self, interaction: discord.Interaction):
+        await interaction.response.defer()
         await self.mass_pass(interaction.guild)
-        await interaction.response.send_message("checked all users in the server and awarded roles if they have reached a new level")
+        await interaction.response.send_message("roles awarded to users who have reached a new level")
+        
 
 
 
