@@ -349,7 +349,7 @@ class Levels(commands.Cog):
         self.points[guild] = {}
         self.save_points()
 
-    async def rolelevelpass(self, guild: discord.Guild, member: discord.Member, level):
+    async def rolelevelpass(self, guild: discord.Guild, member: discord.Member, level, notify=True):
         print(f"rolelevelpass called for {member.name} in {guild.name}")
         async def giverole(member, role, guild):
             if role in member.roles: # don't give the role if the user already has it
@@ -357,14 +357,13 @@ class Levels(commands.Cog):
             try:
                 await member.add_roles(role)
                 print(f"added role {role.name} to {member.name}")
-                try:
-                    await member.send(f"you have been awarded the role {role.name} in {guild.name} for reaching level {level}")
-                except Exception as e:
-                    print(f"could not send DM to {member.name}: {e}")
+                if notify:
+                    try:
+                        await member.send(f"you have been awarded the role {role.name} in {guild.name} for reaching level {level}")
+                    except Exception as e:
+                        print(f"could not send DM to {member.name}: {e}")
             except discord.Forbidden:
                 print(f"tried to give {role.name} to {member.name} but have no permission to add roles in {guild.name}")
-
-        print(f"rolelevelpass called for {member.name} in {guild.name}")
         guildid = guild.id
         guildname = guild.name
         guildconfig = ConfigHandler.guilds[guildid]
@@ -381,7 +380,20 @@ class Levels(commands.Cog):
             else:
                 pass
             
-            
+    async def mass_pass(self, guild):
+        """ check all users in a guild and award roles if they have reached a new level """
+        guildid = str(guild.id)
+        guildpoints = self.points.get(guildid, {})
+
+        for user, points in guildpoints.items():
+            level, _ = self.get_level_from_points(points, guildid)
+            member = guild.get_member(int(user))
+            if member is not None:
+                await self.rolelevelpass(guild, member, level, notify=False)
+                # we don't want to spam the users with DMs, so we don't notify them
+
+    
+
                 
 
     @tasks.loop(seconds=30)  # save every 30 seconds
@@ -517,11 +529,17 @@ class Levels(commands.Cog):
     async def add_points(self, interaction: discord.Interaction, user: discord.Member, points: int):
         guild_id = str(interaction.guild.id)
         user_id = str(user.id)
-        self.award_points(guild_id, user_id, points)
+        self.award_points(guild_id, user_id, points) 
         user_points = self.points.get(guild_id, {}).get(user_id, 0)
         user_level = self.get_level_from_points(user_points, guild_id)[0]
         await self.rolelevelpass(interaction.guild, user, user_level)
         await interaction.response.send_message(f"added {points} points to {user.name}")
+
+    @discord.app_commands.command(name="mass_role_check", description="check all users in the server and award roles if they have reached a new level")
+    @discord.app_commands.default_permissions(manage_roles=True)
+    async def mass_role_check(self, interaction: discord.Interaction):
+        await self.mass_pass(interaction.guild)
+        await interaction.response.send_message("checked all users in the server and awarded roles if they have reached a new level")
 
 
 
